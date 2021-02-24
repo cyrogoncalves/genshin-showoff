@@ -1,0 +1,33 @@
+{
+  "name": "genshin-showoff",
+  "version": "1.0.0",
+  "description": "Showoff your Genshin Impact builds!",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "dependencies": {
+    "config": "^3.3.3",
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "@types/node": "^14.14.31",
+    "@types/redis": "^2.8.28",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cyrogoncalves/genshin-showoff.git"
+  },
+  "author": "Cyro Gonçalves",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cyrogoncalves/genshin-showoff/issues"
+  },
+  "homepage": "https://github.com/cyrogoncalves/genshin-showoff#readme"
+}

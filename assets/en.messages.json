@@ -1,0 +1,20 @@
+{
+  "commands": {
+    "ADD_ARTIFACT": {
+      "name": "artifact",
+      "description": "register an artifact",
+      "aliases": ["add-artifact"],
+      "usage": "-showoff artifact set=crimson rarity=5 level=20 type=flower substats=CR:15.6|CD:23.4|ATK%:5.8|ER:6.5"
+    }
+  },
+  "ERROR_OCCURRED": "An error occurred!",
+  "INVALID_COMMAND": "This command doesn't exist!",
+  "USAGE": "Usage",
+  "ALIASES": "Aliases",
+  "RESTRICTIONS": "Restrictions",
+  "ABOUT": "Version: $version\n\nThis bot was developed during the isolation caused by COVID-19 to chase away loneliness and gather friends.\nFound a bug? Create an issue here: `https://gitlab.com/cyrogoncalves/genshin-showoff/-/issues/new`",
+
+  "INVALID_ARTIFACT_TYPE": "Invalid artifact type `$type`. Valid types: $validTypes",
+  "MAIN_STAT_NOT_PROVIDED": "Main stat not provided.",
+  "DUPLICATE_SUBSTAT": "duplicate $substat substat."
+}

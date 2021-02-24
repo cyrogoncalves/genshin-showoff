@@ -1,11 +1,15 @@
+const weaponTypeNames = ['Sword', 'Bow', 'Polearm', 'Catalyst', 'Claymore'] as const;
+
+export type WeaponType = typeof weaponTypeNames[number];
+
+export type ArtifactType = 'Flower' | 'Plume' | 'Sands' | 'Goblet' | 'Circlet';
+
 export interface Player {
   readonly id: string;
   readonly username: string;
   readonly uid: number;
   readonly nickname: number;
 }
-
-export type WeaponType = 'Sword' | 'Bow' | 'Polearm' | 'Catalyst' | 'Claymore';
 
 export interface Character {
   readonly name: string;
@@ -25,9 +29,10 @@ export interface Weapon {
 export interface PlayerWeapon extends Weapon {
   level: number; // [1-90]
   refinement: number; // [1-5]
+  exp?: number;
 }
 
-export type SubStatType = 'HP' | 'HP%' | 'DEF' | 'DEF%' | 'ATK' | 'ATK%' | 'EM' | 'ER' | 'Crit DMG' | 'Crit Rate';
+export type SubStatType = 'HP' | 'HP%' | 'DEF' | 'DEF%' | 'ATK' | 'ATK%' | 'EM' | 'ER' | 'CD' | 'CR';
 
 export type StatType = SubStatType | 'Healing Bonus' | 'Pyro DMG Bonus' | 'Hydro DMG Bonus' | 'Electro DMG Bonus'
     | 'Cryo DMG Bonus' | 'Anemo DMG Bonus' | 'Geo DMG Bonus' | 'Physical DMG Bonus';
@@ -35,12 +40,13 @@ export type StatType = SubStatType | 'Healing Bonus' | 'Pyro DMG Bonus' | 'Hydro
 export interface Artifact {
   set: string;
   rarity: number; // [1-5]
-  type: 'Flower' | 'Plume' | 'Sands' | 'Goblet' | 'Circlet';
-  stat: StatType;
+  type: ArtifactType;
+  mainStat: StatType;
+  level: number; // [1-20]
+  exp?: number;
   subStats: {
-    type: SubStatType
-    rolls: number;
-  }[]; // [1-4]
+    [key in SubStatType]?: number;
+  }; // [1-4]
 }
 
 export interface PlayerCharacter extends Character {
@@ -52,6 +58,7 @@ export interface PlayerCharacter extends Character {
   };
   constellation: number; // [1-6]
   level: number; // [1-90]
+  exp: number;
   ascension: number; // [1-6]
   artifacts: {
     flower: Artifact;

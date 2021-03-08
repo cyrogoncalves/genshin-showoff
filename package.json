@@ -4,7 +4,8 @@
   "description": "Showoff your Genshin Impact builds!",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "discord": "ts-node src/discord.ts"
   },
   "dependencies": {
     "config": "^3.3.3",

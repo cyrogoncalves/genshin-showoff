@@ -1,6 +1,8 @@
 import * as Discord from 'discord.js';
 import { ArtifactCommands } from './artifact.commands';
 
+require("dotenv").config();
+
 const msg = require(`../assets/${process.env.LOCALE || 'en'}.messages.json`);
 
 const commands: {
@@ -29,40 +31,50 @@ const cooldowns: {
   };
 } = {};
 
-module.exports = () => {
-  const bot = new Discord.Client({ messageCacheMaxSize: 0 });
+const bot = new Discord.Client({ messageCacheMaxSize: 0 });
 
-  bot.on('message', async message => {
-    if (message.channel.type === 'dm' || message.author.bot) return;
-    if (!message.guild.me.hasPermission("SEND_MESSAGES")) return;
-    if (!message.content.startsWith(prefix)) return;
+bot.on('message', async message => {
+  if (message.channel.type === 'dm' || message.author.bot) return;
+  if (!message.guild.me.hasPermission("SEND_MESSAGES")) return;
+  if (!message.content.startsWith(prefix)) return;
 
-    if (!cooldowns[message.author.id]) {
-      const timeout = setTimeout(() => delete cooldowns[message.author.id], cooldownTime);
-      cooldowns[message.author.id] = { count: 1, timeout: timeout };
-    } else {
-      if (++cooldowns[message.author.id].count === cooldownMaxStack)
-        return message.channel.send(`> 🥶 ${message.author}, ${msg.MUTE_NOTICE}`);
-      if (cooldowns[message.author.id].count > cooldownMaxStack)
-        return; // muted
-    }
+  if (!cooldowns[message.author.id]) {
+    const timeout = setTimeout(() => delete cooldowns[message.author.id], cooldownTime);
+    cooldowns[message.author.id] = { count: 1, timeout: timeout };
+  } else {
+    if (++cooldowns[message.author.id].count === cooldownMaxStack)
+      return message.channel.send(`> 🥶 ${message.author}, ${msg.MUTE_NOTICE}`);
+    if (cooldowns[message.author.id].count > cooldownMaxStack)
+      return; // muted
+  }
 
-    const args = message.content.slice(prefix.length).trim().split(/\s+/);
-    const cmdName = args.shift().toLowerCase();
-    const command = commands.find(cmd => cmd.metadata.name === cmdName || cmd.metadata.aliases?.some(a => a === cmdName));
-    if (!command) return;
+  // const args = message.content.slice(prefix.length).trim().split(/\s+/);
+  // const cmdName = args.shift().toLowerCase();
+  // const command = commands.find(cmd => cmd.metadata.name === cmdName || cmd.metadata.aliases?.some(a => a === cmdName));
+  // if (!command) return;
+  //
+  // try {
+  //   command.exe(message, args);
+  // } catch (err) {
+  //   console.error(err);
+  //   return message.channel.send(`:x: | **${err.message || msg.ERROR_OCCURRED}**`);
+  // }
 
-    try {
-      command.exe(message, args);
-    } catch (err) {
-      console.error(err);
-      return message.channel.send(`:x: | **${err.message || msg.ERROR_OCCURRED}**`);
-    }
+
+  console.log(message.guild.emojis.cache.map(emoji => `${emoji.name} = "<:${emoji.identifier}>",`).join('\n'));
+
+  await message.channel.send({
+    embed,
+    files: [{
+      attachment:'assets/noelle-avatar.png',
+      name:'char.png'
+    }]
   });
 
-  bot.on('ready', () => {
-    console.log(`READY!\n\nCommands: ${commands.length}\nGuilds: ${bot.guilds.cache.size}\nUsers: ${bot.users.cache.size}`);
-  });
+});
 
-  return bot.login(process.env.DISCORD_TOKEN);
-};
+bot.on('ready', () => {
+  console.log(`READY!\n\nCommands: ${commands.length}\nGuilds: ${bot.guilds.cache.size}\nUsers: ${bot.users.cache.size}`);
+});
+
+bot.login(process.env.DISCORD_TOKEN);

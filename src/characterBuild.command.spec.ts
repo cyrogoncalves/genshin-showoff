@@ -1,97 +1,45 @@
-import { ArtifactService } from './artifact.service';
-import { Artifact, CharacterBuild } from './model';
+import { CharacterBuildCommand } from "./characterBuild.command";
+import { build } from "./mock/mock";
+import * as Discord from 'discord.js';
 
-const flower: Artifact = {
-  set: 'Retracting Bolide',
-  level: 16,
-  type: 'Flower',
-  rarity: 5,
-  mainStat: 'HP',
-  subStats: {'HP%': 4.7, 'DEF%': 7.3, 'ATK%': 14, 'ATK': 27}
-};
-
-const plume: Artifact = {
-  set: 'Retracting Bolide',
-  level: 18,
-  type: 'Plume',
-  rarity: 5,
-  mainStat: 'ATK',
-  subStats: {'HP': 299, 'CD': 13.2, 'EM': 56, 'ATK%': 10.5}
-}
-
-const sands: Artifact = {
-  set: 'Guardian',
-  level: 12,
-  type: 'Sands',
-  rarity: 4,
-  mainStat: 'DEF%',
-  subStats: {'EM': 15, 'HP%': 3.7, 'ATK': 28, 'DEF': 30}
-}
-
-const goblet: Artifact = {
-  set: 'Guardian',
-  level: 16,
-  type: 'Goblet',
-  rarity: 4,
-  mainStat: 'DEF%',
-  subStats: {'HP': 191, 'ATK': 14, 'ATK%': 7.5, 'ER': 9.8}
-}
-
-const circlet: Artifact = {
-  set: 'Retracting Bolide',
-  level: 20,
-  type: 'Circlet',
-  rarity: 5,
-  mainStat: 'CD',
-  subStats: {'ATK': 33, 'CR': 2.7, 'DEF': 53, 'HP': 448}
-}
-
-const build: CharacterBuild = {
-  character: {
-    name: "Noelle",
-    rarity: 4,
-    element: 'Geo',
-    weaponType: 'Claymore',
+const mockMessage = {
+  channel: {
+    send: (
+        content: Discord.APIMessageContentResolvable | (Discord.MessageOptions & { split?: false }) | Discord.MessageAdditions,
+    ): Promise<Discord.Message> => null,
+    guild: {
+      members: {
+        cache: new Discord.Collection<Discord.Snowflake, Discord.GuildMember>([["id", { nickname: "nickname"} as Discord.GuildMember]])
+      }
+    }
   },
-  player: {
-    id: "playerId",
+  author: {
+    id: "id",
     username: "username",
-    nickname: "playerNickname",
-  },
-  talentLevels: {
-    normalAttack: 1,
-    elementalSkill: 1,
-    elementalBurst: 9
-  },
-  constellation: 6,
-  level: 50,
-  ascension: 3,
-  artifacts: {
-    flower,
-    plume,
-    sands,
-    goblet,
-    circlet
-  },
-  weapon: {
-    name: "Skyward Pride",
-    type: 'Claymore',
-    rarity: 5,
-    baseAtk: 48,
-    substat: {
-      type: 'ER',
-      base: 8
-    },
-
-    level: 90,
-    ascension: 6,
-    refinement: 1
+    avatarURL: () => "avatarURL"
   }
-}
+} as Discord.Message;
 
 describe('CharacterBuildCommand', () => {
-  it('possible Values For 1 Roll on 5*', () => {
-    const possibleSums = ArtifactService.possibleCombinations(4, 1);
-    expect(possibleSums).toEqual([[0], [1], [2], [3]]);
-  })
+  describe('createEmbed', () => {
+    it('works', () => {
+      const embed = CharacterBuildCommand.createEmbed(mockMessage, build);
+      expect(embed).toBeTruthy();
+      expect(embed.author.name).toBe("nickname");
+      expect(embed.author.iconURL).toBe("avatarURL");
+      expect(embed.thumbnail).toEqual({"url": "attachment://char.png"});
+      expect(embed.title).toBe("<:geo:814601970617811015> Noelle C6");
+
+      // .addField(`Stats:`, `${ShowoffEmoji.HP} **HP:** 3000\n${ShowoffEmoji.ATK} **ATK:** 311\n${ShowoffEmoji.DEF} **DEF:** 800\n${ShowoffEmoji.EM} **EM:** 80`, true)
+      // .addField(`(lvl 50/60 ${ShowoffEmoji.ascension11}${ShowoffEmoji.ascension10}${ShowoffEmoji.ascension00})`, `${ShowoffEmoji.ER} **ER:** 160%\n${ShowoffEmoji.CR} **Crit Rate:** 14,1%\n${ShowoffEmoji.CD} **Crit DMG:** 106,6%\n${ShowoffEmoji.geo} **Geo DMG:** +46,6%`, true)
+      expect(embed.fields[0].name).toBe("Stats:")
+      expect(embed.fields[0].value).toMatch(/<:HP:\d+> \*\*HP:\*\* \d+\n<:ATK:\d+> \*\*ATK:\*\* \d+\n<:DEF:\d+> \*\*DEF:\*\* \d+\n<:EM:\d+> \*\*EM:\*\* \d+/);
+      expect(embed.fields[0].value).toBe([
+        "${ShowoffEmoji.HP} **HP:** 3000",
+        "${ShowoffEmoji.ATK} **ATK:** 311",
+        "${ShowoffEmoji.DEF} **DEF:** 800",
+        "${ShowoffEmoji.EM} **EM:** 80"
+      ].join("\n"));
+    })
+  });
 });

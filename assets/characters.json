@@ -6,11 +6,11 @@
     "weaponType": "Sword",
     "stats": [{"1":{"HP":1030,"ATK":20,"DEF":68},"20":{"HP":2671,"ATK":51,"DEF":177}},
       {"20":{"HP":3554,"ATK":68,"DEF":235},"40":{"HP":5317,"ATK":101,"DEF":352}},
-      {"40":{"HP":5944,"ATK":113,"DEF":394,"Geo DMG Bonus":7.2},"50":{"HP":6839,"ATK":130,"DEF":453,"Geo DMG Bonus":7.2}},
-      {"50":{"HP":7675,"ATK":146,"DEF":508,"Geo DMG Bonus":14.4},"60":{"HP":8579,"ATK":163,"DEF":568,"Geo DMG Bonus":14.4}},
-      {"60":{"HP":9207,"ATK":175,"DEF":610,"Geo DMG Bonus":14.4},"70":{"HP":10119,"ATK":192,"DEF":670,"Geo DMG Bonus":14.4}},
-      {"70":{"HP":10746,"ATK":204,"DEF":712,"Geo DMG Bonus":21.6},"80":{"HP":11669,"ATK":222,"DEF":773,"Geo DMG Bonus":21.6}},
-      {"80":{"HP":12296,"ATK":233,"DEF":815,"Geo DMG Bonus":28.8},"90":{"HP":13226,"ATK":251,"DEF":876,"Geo DMG Bonus":28.8}}]
+      {"40":{"HP":5944,"ATK":113,"DEF":394,"Geo DMG":7.2},"50":{"HP":6839,"ATK":130,"DEF":453,"Geo DMG":7.2}},
+      {"50":{"HP":7675,"ATK":146,"DEF":508,"Geo DMG":14.4},"60":{"HP":8579,"ATK":163,"DEF":568,"Geo DMG":14.4}},
+      {"60":{"HP":9207,"ATK":175,"DEF":610,"Geo DMG":14.4},"70":{"HP":10119,"ATK":192,"DEF":670,"Geo DMG":14.4}},
+      {"70":{"HP":10746,"ATK":204,"DEF":712,"Geo DMG":21.6},"80":{"HP":11669,"ATK":222,"DEF":773,"Geo DMG":21.6}},
+      {"80":{"HP":12296,"ATK":233,"DEF":815,"Geo DMG":28.8},"90":{"HP":13226,"ATK":251,"DEF":876,"Geo DMG":28.8}}]
   },
   {
     "name": "Amber",
@@ -45,11 +45,11 @@
     "weaponType": "Claymore",
     "stats": [{"1":{"HP":1094,"ATK":19,"DEF":54},"20":{"HP":2811,"ATK":48,"DEF":140}},
       {"20":{"HP":3628,"ATK":63,"DEF":180},"40":{"HP":5435,"ATK":94,"DEF":270}},
-      {"40":{"HP":6015,"ATK":104,"DEF":299,"Electro DMG Bonus":6},"50":{"HP":6919,"ATK":119,"DEF":344,"Electro DMG Bonus":6}},
-      {"50":{"HP":7694,"ATK":133,"DEF":382,"Electro DMG Bonus":12},"60":{"HP":8597,"ATK":148,"DEF":427,"Electro DMG Bonus":12}},
-      {"60":{"HP":9178,"ATK":158,"DEF":456,"Electro DMG Bonus":12},"70":{"HP":10081,"ATK":174,"DEF":501,"Electro DMG Bonus":12}},
-      {"70":{"HP":10662,"ATK":184,"DEF":530,"Electro DMG Bonus":18},"80":{"HP":11565,"ATK":200,"DEF":575,"Electro DMG Bonus":18}},
-      {"80":{"HP":12146,"ATK":210,"DEF":603,"Electro DMG Bonus":24},"90":{"HP":13050,"ATK":225,"DEF":648,"Electro DMG Bonus":24}}]
+      {"40":{"HP":6015,"ATK":104,"DEF":299,"Electro DMG":6},"50":{"HP":6919,"ATK":119,"DEF":344,"Electro DMG":6}},
+      {"50":{"HP":7694,"ATK":133,"DEF":382,"Electro DMG":12},"60":{"HP":8597,"ATK":148,"DEF":427,"Electro DMG":12}},
+      {"60":{"HP":9178,"ATK":158,"DEF":456,"Electro DMG":12},"70":{"HP":10081,"ATK":174,"DEF":501,"Electro DMG":12}},
+      {"70":{"HP":10662,"ATK":184,"DEF":530,"Electro DMG":18},"80":{"HP":11565,"ATK":200,"DEF":575,"Electro DMG":18}},
+      {"80":{"HP":12146,"ATK":210,"DEF":603,"Electro DMG":24},"90":{"HP":13050,"ATK":225,"DEF":648,"Electro DMG":24}}]
   },
   {
     "name": "Bennett",
@@ -97,11 +97,11 @@
     "weaponType": "Bow",
     "stats":[{"1":{"HP":802,"ATK":18,"DEF":50},"20":{"HP":2061,"ATK":46,"DEF":129}},
       {"20":{"HP":2661,"ATK":59,"DEF":167},"40":{"HP":3985,"ATK":88,"DEF":250}},
-      {"40":{"HP":4411,"ATK":98,"DEF":277,"Cryo DMG Bonus":6},"50":{"HP":5074,"ATK":113,"DEF":318,"Cryo DMG Bonus":6}},
-      {"50":{"HP":5642,"ATK":125,"DEF":354,"Cryo DMG Bonus":12},"60":{"HP":6305,"ATK":140,"DEF":396,"Cryo DMG Bonus":12}},
-      {"60":{"HP":6731,"ATK":149,"DEF":422,"Cryo DMG Bonus":12},"70":{"HP":7393,"ATK":164,"DEF":464,"Cryo DMG Bonus":12}},
-      {"70":{"HP":7818,"ATK":174,"DEF":491,"Cryo DMG Bonus":18},"80":{"HP":8481,"ATK":188,"DEF":532,"Cryo DMG Bonus":18}},
-      {"80":{"HP":8907,"ATK":198,"DEF":559,"Cryo DMG Bonus":24},"90":{"HP":9570,"ATK":212,"DEF":601,"Cryo DMG Bonus":24}}]
+      {"40":{"HP":4411,"ATK":98,"DEF":277,"Cryo DMG":6},"50":{"HP":5074,"ATK":113,"DEF":318,"Cryo DMG":6}},
+      {"50":{"HP":5642,"ATK":125,"DEF":354,"Cryo DMG":12},"60":{"HP":6305,"ATK":140,"DEF":396,"Cryo DMG":12}},
+      {"60":{"HP":6731,"ATK":149,"DEF":422,"Cryo DMG":12},"70":{"HP":7393,"ATK":164,"DEF":464,"Cryo DMG":12}},
+      {"70":{"HP":7818,"ATK":174,"DEF":491,"Cryo DMG":18},"80":{"HP":8481,"ATK":188,"DEF":532,"Cryo DMG":18}},
+      {"80":{"HP":8907,"ATK":198,"DEF":559,"Cryo DMG":24},"90":{"HP":9570,"ATK":212,"DEF":601,"Cryo DMG":24}}]
   },
   {
     "name": "Fischl",
@@ -149,11 +149,11 @@
     "weaponType": "Sword",
     "stats":[{"1":{"HP":1144,"ATK":19,"DEF":60},"20":{"HP":2967,"ATK":48,"DEF":155}},
       {"20":{"HP":3948,"ATK":64,"DEF":206},"40":{"HP":5908,"ATK":96,"DEF":309}},
-      {"40":{"HP":6605,"ATK":108,"DEF":345,"Healing Bonus":5.5},"50":{"HP":7599,"ATK":124,"DEF":397,"Healing Bonus":5.5}},
-      {"50":{"HP":8528,"ATK":139,"DEF":446,"Healing Bonus":11.1},"60":{"HP":9533,"ATK":155,"DEF":499,"Healing Bonus":11.1}},
-      {"60":{"HP":10230,"ATK":166,"DEF":535,"Healing Bonus":11.1},"70":{"HP":11243,"ATK":183,"DEF":588,"Healing Bonus":11.1}},
-      {"70":{"HP":11940,"ATK":194,"DEF":624,"Healing Bonus":16.6},"80":{"HP":12965,"ATK":211,"DEF":678,"Healing Bonus":16.6}},
-      {"80":{"HP":13662,"ATK":222,"DEF":715,"Healing Bonus":22.2},"90":{"HP":14695,"ATK":239,"DEF":769,"Healing Bonus":22.2}}]
+      {"40":{"HP":6605,"ATK":108,"DEF":345,"Healing":5.5},"50":{"HP":7599,"ATK":124,"DEF":397,"Healing":5.5}},
+      {"50":{"HP":8528,"ATK":139,"DEF":446,"Healing":11.1},"60":{"HP":9533,"ATK":155,"DEF":499,"Healing":11.1}},
+      {"60":{"HP":10230,"ATK":166,"DEF":535,"Healing":11.1},"70":{"HP":11243,"ATK":183,"DEF":588,"Healing":11.1}},
+      {"70":{"HP":11940,"ATK":194,"DEF":624,"Healing":16.6},"80":{"HP":12965,"ATK":211,"DEF":678,"Healing":16.6}},
+      {"80":{"HP":13662,"ATK":222,"DEF":715,"Healing":22.2},"90":{"HP":14695,"ATK":239,"DEF":769,"Healing":22.2}}]
   },
   {
     "name": "Kaeya",
@@ -188,11 +188,11 @@
     "weaponType": "Catalyst",
     "stats":[{"1":{"HP":801,"ATK":24,"DEF":48},"20":{"HP":2077,"ATK":63,"DEF":124}},
       {"20":{"HP":2764,"ATK":84,"DEF":165},"40":{"HP":4136,"ATK":125,"DEF":247}},
-      {"40":{"HP":4623,"ATK":140,"DEF":276,"Pyro DMG Bonus":7.2},"50":{"HP":5319,"ATK":161,"DEF":318,"Pyro DMG Bonus":7.2}},
-      {"50":{"HP":5970,"ATK":180,"DEF":357,"Pyro DMG Bonus":14.4},"60":{"HP":6673,"ATK":202,"DEF":399,"Pyro DMG Bonus":14.4}},
-      {"60":{"HP":7161,"ATK":216,"DEF":428,"Pyro DMG Bonus":14.4},"70":{"HP":7870,"ATK":238,"DEF":470,"Pyro DMG Bonus":14.4}},
-      {"70":{"HP":8358,"ATK":253,"DEF":500,"Pyro DMG Bonus":21.6},"80":{"HP":9076,"ATK":274,"DEF":542,"Pyro DMG Bonus":21.6}},
-      {"80":{"HP":9563,"ATK":289,"DEF":572,"Pyro DMG Bonus":28.8},"90":{"HP":10287,"ATK":311,"DEF":615,"Pyro DMG Bonus":28.8}}]
+      {"40":{"HP":4623,"ATK":140,"DEF":276,"Pyro DMG":7.2},"50":{"HP":5319,"ATK":161,"DEF":318,"Pyro DMG":7.2}},
+      {"50":{"HP":5970,"ATK":180,"DEF":357,"Pyro DMG":14.4},"60":{"HP":6673,"ATK":202,"DEF":399,"Pyro DMG":14.4}},
+      {"60":{"HP":7161,"ATK":216,"DEF":428,"Pyro DMG":14.4},"70":{"HP":7870,"ATK":238,"DEF":470,"Pyro DMG":14.4}},
+      {"70":{"HP":8358,"ATK":253,"DEF":500,"Pyro DMG":21.6},"80":{"HP":9076,"ATK":274,"DEF":542,"Pyro DMG":21.6}},
+      {"80":{"HP":9563,"ATK":289,"DEF":572,"Pyro DMG":28.8},"90":{"HP":10287,"ATK":311,"DEF":615,"Pyro DMG":28.8}}]
   },
   {
     "name": "Lisa",
@@ -227,11 +227,11 @@
     "weaponType": "Catalyst",
     "stats":[{"1":{"HP":821,"ATK":18,"DEF":48},"20":{"HP":2108,"ATK":46,"DEF":123}},
       {"20":{"HP":2721,"ATK":59,"DEF":159},"40":{"HP":4076,"ATK":88,"DEF":239}},
-      {"40":{"HP":4512,"ATK":98,"DEF":264,"Geo DMG Bonus":6},"50":{"HP":5189,"ATK":113,"DEF":304,"Geo DMG Bonus":6}},
-      {"50":{"HP":5770,"ATK":125,"DEF":338,"Geo DMG Bonus":12},"60":{"HP":6448,"ATK":140,"DEF":378,"Geo DMG Bonus":12}},
-      {"60":{"HP":6884,"ATK":149,"DEF":403,"Geo DMG Bonus":12},"70":{"HP":7561,"ATK":164,"DEF":443,"Geo DMG Bonus":12}},
-      {"70":{"HP":7996,"ATK":174,"DEF":468,"Geo DMG Bonus":18},"80":{"HP":8674,"ATK":188,"DEF":508,"Geo DMG Bonus":18}},
-      {"80":{"HP":9110,"ATK":198,"DEF":534,"Geo DMG Bonus":24},"90":{"HP":9787,"ATK":212,"DEF":573,"Geo DMG Bonus":24}}]
+      {"40":{"HP":4512,"ATK":98,"DEF":264,"Geo DMG":6},"50":{"HP":5189,"ATK":113,"DEF":304,"Geo DMG":6}},
+      {"50":{"HP":5770,"ATK":125,"DEF":338,"Geo DMG":12},"60":{"HP":6448,"ATK":140,"DEF":378,"Geo DMG":12}},
+      {"60":{"HP":6884,"ATK":149,"DEF":403,"Geo DMG":12},"70":{"HP":7561,"ATK":164,"DEF":443,"Geo DMG":12}},
+      {"70":{"HP":7996,"ATK":174,"DEF":468,"Geo DMG":18},"80":{"HP":8674,"ATK":188,"DEF":508,"Geo DMG":18}},
+      {"80":{"HP":9110,"ATK":198,"DEF":534,"Geo DMG":24},"90":{"HP":9787,"ATK":212,"DEF":573,"Geo DMG":24}}]
   },
   {
     "name": "Noelle",
@@ -253,11 +253,11 @@
     "weaponType": "Sword",
     "stats":[{"1":{"HP":963,"ATK":22,"DEF":72},"20":{"HP":2498,"ATK":58,"DEF":186}},
       {"20":{"HP":3323,"ATK":77,"DEF":248},"40":{"HP":4973,"ATK":115,"DEF":371}},
-      {"40":{"HP":5559,"ATK":129,"DEF":415,"Healing Bonus":5.5},"50":{"HP":6396,"ATK":148,"DEF":477,"Healing Bonus":5.5}},
-      {"50":{"HP":7178,"ATK":167,"DEF":535,"Healing Bonus":11.1},"60":{"HP":8023,"ATK":186,"DEF":598,"Healing Bonus":11.1}},
-      {"60":{"HP":8610,"ATK":200,"DEF":642,"Healing Bonus":11.1},"70":{"HP":9463,"ATK":220,"DEF":706,"Healing Bonus":11.1}},
-      {"70":{"HP":10050,"ATK":233,"DEF":749,"Healing Bonus":16.6},"80":{"HP":10912,"ATK":253,"DEF":814,"Healing Bonus":16.6}},
-      {"80":{"HP":11499,"ATK":267,"DEF":857,"Healing Bonus":22.2},"90":{"HP":12368,"ATK":287,"DEF":922,"Healing Bonus":22.2}}]
+      {"40":{"HP":5559,"ATK":129,"DEF":415,"Healing":5.5},"50":{"HP":6396,"ATK":148,"DEF":477,"Healing":5.5}},
+      {"50":{"HP":7178,"ATK":167,"DEF":535,"Healing":11.1},"60":{"HP":8023,"ATK":186,"DEF":598,"Healing":11.1}},
+      {"60":{"HP":8610,"ATK":200,"DEF":642,"Healing":11.1},"70":{"HP":9463,"ATK":220,"DEF":706,"Healing":11.1}},
+      {"70":{"HP":10050,"ATK":233,"DEF":749,"Healing":16.6},"80":{"HP":10912,"ATK":253,"DEF":814,"Healing":16.6}},
+      {"80":{"HP":11499,"ATK":267,"DEF":857,"Healing":22.2},"90":{"HP":12368,"ATK":287,"DEF":922,"Healing":22.2}}]
   },
   {
     "name": "Razor",
@@ -266,11 +266,11 @@
     "weaponType": "Claymore",
     "stats":[{"1":{"HP":1003,"ATK":20,"DEF":63},"20":{"HP":2577,"ATK":50,"DEF":162}},
       {"20":{"HP":3326,"ATK":65,"DEF":209},"40":{"HP":4982,"ATK":97,"DEF":313}},
-      {"40":{"HP":5514,"ATK":108,"DEF":346,"Physical DMG Bonus":7.5},"50":{"HP":6343,"ATK":124,"DEF":398,"Physical DMG Bonus":7.5}},
-      {"50":{"HP":7052,"ATK":138,"DEF":443,"Physical DMG Bonus":15},"60":{"HP":7881,"ATK":154,"DEF":495,"Physical DMG Bonus":15}},
-      {"60":{"HP":8413,"ATK":164,"DEF":528,"Physical DMG Bonus":15},"70":{"HP":9241,"ATK":180,"DEF":580,"Physical DMG Bonus":15}},
-      {"70":{"HP":9773,"ATK":191,"DEF":613,"Physical DMG Bonus":22.5},"80":{"HP":10602,"ATK":207,"DEF":665,"Physical DMG Bonus":22.5}},
-      {"80":{"HP":11134,"ATK":217,"DEF":699,"Physical DMG Bonus":30},"90":{"HP":11962,"ATK":234,"DEF":751,"Physical DMG Bonus":30}}]
+      {"40":{"HP":5514,"ATK":108,"DEF":346,"Physical DMG":7.5},"50":{"HP":6343,"ATK":124,"DEF":398,"Physical DMG":7.5}},
+      {"50":{"HP":7052,"ATK":138,"DEF":443,"Physical DMG":15},"60":{"HP":7881,"ATK":154,"DEF":495,"Physical DMG":15}},
+      {"60":{"HP":8413,"ATK":164,"DEF":528,"Physical DMG":15},"70":{"HP":9241,"ATK":180,"DEF":580,"Physical DMG":15}},
+      {"70":{"HP":9773,"ATK":191,"DEF":613,"Physical DMG":22.5},"80":{"HP":10602,"ATK":207,"DEF":665,"Physical DMG":22.5}},
+      {"80":{"HP":11134,"ATK":217,"DEF":699,"Physical DMG":30},"90":{"HP":11962,"ATK":234,"DEF":751,"Physical DMG":30}}]
   },
   {
     "name": "Sucrose",
@@ -279,11 +279,11 @@
     "weaponType": "Catalyst",
     "stats":[{"1":{"HP":775,"ATK":14,"DEF":59},"20":{"HP":1991,"ATK":37,"DEF":151}},
       {"20":{"HP":2570,"ATK":47,"DEF":195},"40":{"HP":3850,"ATK":71,"DEF":293}},
-      {"40":{"HP":4261,"ATK":78,"DEF":324,"Anemo DMG Bonus":6},"50":{"HP":4901,"ATK":90,"DEF":373,"Anemo DMG Bonus":6}},
-      {"50":{"HP":5450,"ATK":100,"DEF":414,"Anemo DMG Bonus":12},"60":{"HP":6090,"ATK":112,"DEF":463,"Anemo DMG Bonus":12}},
-      {"60":{"HP":6501,"ATK":120,"DEF":494,"Anemo DMG Bonus":12},"70":{"HP":7141,"ATK":131,"DEF":543,"Anemo DMG Bonus":12}},
-      {"70":{"HP":7552,"ATK":139,"DEF":574,"Anemo DMG Bonus":18},"80":{"HP":8192,"ATK":151,"DEF":623,"Anemo DMG Bonus":18}},
-      {"80":{"HP":8603,"ATK":158,"DEF":654,"Anemo DMG Bonus":24},"90":{"HP":9243,"ATK":170,"DEF":703,"Anemo DMG Bonus":24}}]
+      {"40":{"HP":4261,"ATK":78,"DEF":324,"Anemo DMG":6},"50":{"HP":4901,"ATK":90,"DEF":373,"Anemo DMG":6}},
+      {"50":{"HP":5450,"ATK":100,"DEF":414,"Anemo DMG":12},"60":{"HP":6090,"ATK":112,"DEF":463,"Anemo DMG":12}},
+      {"60":{"HP":6501,"ATK":120,"DEF":494,"Anemo DMG":12},"70":{"HP":7141,"ATK":131,"DEF":543,"Anemo DMG":12}},
+      {"70":{"HP":7552,"ATK":139,"DEF":574,"Anemo DMG":18},"80":{"HP":8192,"ATK":151,"DEF":623,"Anemo DMG":18}},
+      {"80":{"HP":8603,"ATK":158,"DEF":654,"Anemo DMG":24},"90":{"HP":9243,"ATK":170,"DEF":703,"Anemo DMG":24}}]
   },
   {
     "name": "Tartaglia",
@@ -292,11 +292,11 @@
     "weaponType": "Bow",
     "stats":[{"1":{"HP":1020,"ATK":23,"DEF":63},"20":{"HP":2646,"ATK":61,"DEF":165}},
       {"20":{"HP":3521,"ATK":81,"DEF":219},"40":{"HP":5268,"ATK":121,"DEF":328}},
-      {"40":{"HP":5889,"ATK":135,"DEF":366,"Hydro DMG Bonus":7.2},"50":{"HP":6776,"ATK":156,"DEF":421,"Hydro DMG Bonus":7.2}},
-      {"50":{"HP":7604,"ATK":175,"DEF":473,"Hydro DMG Bonus":14.4},"60":{"HP":8500,"ATK":195,"DEF":528,"Hydro DMG Bonus":14.4}},
-      {"60":{"HP":9121,"ATK":210,"DEF":567,"Hydro DMG Bonus":14.4},"70":{"HP":10025,"ATK":231,"DEF":623,"Hydro DMG Bonus":14.4}},
-      {"70":{"HP":10647,"ATK":245,"DEF":662,"Hydro DMG Bonus":21.6},"80":{"HP":11561,"ATK":266,"DEF":719,"Hydro DMG Bonus":21.6}},
-      {"80":{"HP":12182,"ATK":280,"DEF":757,"Hydro DMG Bonus":28.8},"90":{"HP":13103,"ATK":301,"DEF":815,"Hydro DMG Bonus":28.8}}]
+      {"40":{"HP":5889,"ATK":135,"DEF":366,"Hydro DMG":7.2},"50":{"HP":6776,"ATK":156,"DEF":421,"Hydro DMG":7.2}},
+      {"50":{"HP":7604,"ATK":175,"DEF":473,"Hydro DMG":14.4},"60":{"HP":8500,"ATK":195,"DEF":528,"Hydro DMG":14.4}},
+      {"60":{"HP":9121,"ATK":210,"DEF":567,"Hydro DMG":14.4},"70":{"HP":10025,"ATK":231,"DEF":623,"Hydro DMG":14.4}},
+      {"70":{"HP":10647,"ATK":245,"DEF":662,"Hydro DMG":21.6},"80":{"HP":11561,"ATK":266,"DEF":719,"Hydro DMG":21.6}},
+      {"80":{"HP":12182,"ATK":280,"DEF":757,"Hydro DMG":28.8},"90":{"HP":13103,"ATK":301,"DEF":815,"Hydro DMG":28.8}}]
   },
   {
     "name": "Venti",
@@ -370,11 +370,11 @@
     "weaponType": "Polearm",
     "stats":[{"1":{"HP":1144,"ATK":20,"DEF":57},"20":{"HP":2967,"ATK":51,"DEF":149}},
       {"20":{"HP":3948,"ATK":67,"DEF":198},"40":{"HP":5908,"ATK":101,"DEF":297}},
-      {"40":{"HP":6605,"ATK":113,"DEF":332,"Geo DMG Bonus":7.2},"50":{"HP":7599,"ATK":130,"DEF":382,"Geo DMG Bonus":7.2}},
-      {"50":{"HP":8528,"ATK":146,"DEF":428,"Geo DMG Bonus":14.4},"60":{"HP":9533,"ATK":163,"DEF":479,"Geo DMG Bonus":14.4}},
-      {"60":{"HP":10230,"ATK":175,"DEF":514,"Geo DMG Bonus":14.4},"70":{"HP":11243,"ATK":192,"DEF":564,"Geo DMG Bonus":14.4}},
-      {"70":{"HP":11940,"ATK":204,"DEF":599,"Geo DMG Bonus":21.6},"80":{"HP":12965,"ATK":222,"DEF":651,"Geo DMG Bonus":21.6}},
-      {"80":{"HP":13662,"ATK":233,"DEF":686,"Geo DMG Bonus":28.8},"90":{"HP":14695,"ATK":251,"DEF":738,"Geo DMG Bonus":28.8}}]
+      {"40":{"HP":6605,"ATK":113,"DEF":332,"Geo DMG":7.2},"50":{"HP":7599,"ATK":130,"DEF":382,"Geo DMG":7.2}},
+      {"50":{"HP":8528,"ATK":146,"DEF":428,"Geo DMG":14.4},"60":{"HP":9533,"ATK":163,"DEF":479,"Geo DMG":14.4}},
+      {"60":{"HP":10230,"ATK":175,"DEF":514,"Geo DMG":14.4},"70":{"HP":11243,"ATK":192,"DEF":564,"Geo DMG":14.4}},
+      {"70":{"HP":11940,"ATK":204,"DEF":599,"Geo DMG":21.6},"80":{"HP":12965,"ATK":222,"DEF":651,"Geo DMG":21.6}},
+      {"80":{"HP":13662,"ATK":233,"DEF":686,"Geo DMG":28.8},"90":{"HP":14695,"ATK":251,"DEF":738,"Geo DMG":28.8}}]
   },
   {
     "name": "Traveller",

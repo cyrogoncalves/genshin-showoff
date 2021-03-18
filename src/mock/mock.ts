@@ -7,7 +7,7 @@ export const flower: Artifact = {
   type: 'Flower',
   rarity: 5,
   mainStat: 'HP',
-  subStats: {'HP%': 4.7, 'DEF%': 7.3, 'ATK%': 14, 'ATK': 27}
+  subStats: {'HP%': 4.7, 'DEF%': 7.25, 'ATK%': 14, 'ATK': 27}
 };
 
 export const plume: Artifact = {
@@ -20,7 +20,7 @@ export const plume: Artifact = {
 }
 
 export const sands: Artifact = {
-  set: 'Guardian',
+  set: 'Defender\'s Will',
   level: 12,
   type: 'Sands',
   rarity: 4,
@@ -29,7 +29,7 @@ export const sands: Artifact = {
 }
 
 export const goblet: Artifact = {
-  set: 'Guardian',
+  set: 'Defender\'s Will',
   level: 16,
   type: 'Goblet',
   rarity: 4,

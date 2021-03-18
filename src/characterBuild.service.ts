@@ -67,6 +67,31 @@ const scalingStats = [{
   "Healing": [5.4, 6.9, 8.4, 10.0, 11.5, 13.0, 14.5, 16.1, 17.6, 19.1, 20.6, 22.2, 23.7, 25.2, 26.7, 28.3, 29.8, 31.3, 32.8, 34.4, 35.9],
 }];
 
+const artifactSetBonuses = {
+  "Adventurer": { "twoPieceBonus": { "HP": 1000 } },
+  "Lucky Dog": { "twoPieceBonus": { "DEF": 100 } },
+
+  "Instructor": { "twoPieceBonus": { "EM": 80 } },
+  "Berserker": { "twoPieceBonus": { "CR": 12 } },
+  "The Exile": { "twoPieceBonus": { "ER": 20 } },
+  "Defender's Will": { "twoPieceBonus": { "DEF%": 30 } },
+  "Scholar": { "twoPieceBonus": { "ER": 20 } },
+  "Resolution of Sojourner": { "twoPieceBonus": { "ATK%": 18 } },
+  "Brave Heart": { "twoPieceBonus": { "ATK%": 18 } },
+
+  "Gladiator's Finale": { "twoPieceBonus": { "ATK%": 18 } },
+  "Wanderer's Troupe": { "twoPieceBonus": { "EM": 80 } },
+  "Crimson Witch of Flames": { "twoPieceBonus": { "Pyro DMG": 15 } },
+  "Lavawalker": { "twoPieceBonus": { "Pyro RES": 40 } },
+  "Thundering Fury": { "twoPieceBonus": { "Electro DMG": 15 } },
+  "Thundersoother": { "twoPieceBonus": { "Electro RES": 40 } },
+  "Viridescent Venerer": { "twoPieceBonus": { "Anemo DMG": 15 } },
+  "Archaic Petra": { "twoPieceBonus": { "Geo DMG": 15 } },
+  "Bloodstained Chivalry": { "twoPieceBonus": { "Physical DMG": 25 } },
+  "Heart of Depth": { "twoPieceBonus": { "Hydro DMG": 15 } },
+  "Blizzard Strayer": { "twoPieceBonus": { "Cryo DMG": 15 } },
+}
+
 const percentageMap = {"HP": "HP%", "ATK": "ATK%", "DEF": "DEF%"};
 
 type BuildStats = {
@@ -87,7 +112,20 @@ const calculateStats = (build: CharacterBuild): BuildStats => {
     }
     return stats;
   }, { ...baseStats });
+
+  // artifact set bonuses
+  const setCount = build.artifacts.reduce((setCount, art) => {
+    setCount[art.set] = (setCount[art.set] || 0) + 1;
+    return setCount;
+  }, {});
+  Object.keys(setCount).filter(key => setCount[key] >= 2).forEach(key => {
+    Object.keys(artifactSetBonuses[key]?.twoPieceBonus ?? {}).forEach(statName => {
+      stats[statName] = (stats[statName] || 0) + artifactSetBonuses[key].twoPieceBonus[statName];
+    });
+  });
+
   stats["HP"] += baseStats["HP"] * (stats["HP%"] / 100);
+  stats["DEF"] += baseStats["DEF"] * (stats["DEF%"] / 100);
   return stats;
 }
 

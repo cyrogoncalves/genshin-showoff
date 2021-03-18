@@ -75,3 +75,7 @@ export interface CharacterBuild {
   artifacts: Artifact[], // [5]
   weapon: Weapon,
 }
+
+export type BuildStats = {
+  [key in StatType]?: number;
+}

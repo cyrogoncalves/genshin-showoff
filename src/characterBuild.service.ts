@@ -1,4 +1,4 @@
-import { CharacterBuild, StatType } from './model';
+import { BuildStats, CharacterBuild, StatType } from './model';
 
 const scalingStats = [{
   "HP": [129, 178, 227, 275, 324],
@@ -90,12 +90,6 @@ const artifactSetBonuses = {
   "Bloodstained Chivalry": { "twoPieceBonus": { "Physical DMG": 25 } },
   "Heart of Depth": { "twoPieceBonus": { "Hydro DMG": 15 } },
   "Blizzard Strayer": { "twoPieceBonus": { "Cryo DMG": 15 } },
-}
-
-const percentageMap = {"HP": "HP%", "ATK": "ATK%", "DEF": "DEF%"};
-
-type BuildStats = {
-  [key in StatType]?: number;
 }
 
 const calculateStats = (build: CharacterBuild): BuildStats => {

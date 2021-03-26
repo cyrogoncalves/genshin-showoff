@@ -6,12 +6,6 @@ export type WeaponType = typeof weaponTypeNames[number];
 
 export type ArtifactType = 'Flower' | 'Plume' | 'Sands' | 'Goblet' | 'Circlet';
 
-export interface Player {
-  readonly id: string;
-  readonly username: string;
-  readonly nickname: string;
-}
-
 export interface Character {
   readonly name: string;
   readonly rarity: 4 | 5;
@@ -36,14 +30,14 @@ export interface WeaponModel {
 }
 
 export interface Weapon {
-  model: WeaponModel;
+  name: string;
   level: Level; // [1-90]
   ascension: number; // [1-6]
   refinement: number; // [1-5]
   exp?: number;
 }
 
-const subStatNames = ['HP', 'HP%', 'DEF', 'DEF%', 'ATK', 'ATK%', 'EM', 'ER', 'CD', 'CR'] as const;
+export const subStatNames = ['HP', 'HP%', 'DEF', 'DEF%', 'ATK', 'ATK%', 'EM', 'ER', 'CD', 'CR'];
 export type SubStatType = typeof subStatNames[number];
 
 export type StatType = SubStatType | 'Healing' | 'Pyro DMG' | 'Hydro DMG' | 'Electro DMG' | 'Cryo DMG' | 'Anemo DMG' | 'Geo DMG' | 'Physical DMG';
@@ -61,8 +55,8 @@ export interface Artifact {
 }
 
 export interface CharacterBuild {
-  character: Character,
-  player?: Player,
+  characterName: string,
+  playerId?: string
   talentLevels: {
     normalAttack: number, // [1-10]
     elementalSkill: number, // [1-10]

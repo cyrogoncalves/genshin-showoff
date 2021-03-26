@@ -59,7 +59,7 @@ const scalingSubstats = {
 }
 
 const calculateStats = (weapon: Weapon): BuildStats => {
-  const weaponModel = WEAPONS.find(w => w.name === weapon.model.name);
+  const weaponModel = WEAPONS.find(w => w.name === weapon.name);
   const stats = {};
   stats["ATK"] = scalingStats
       [weaponModel.rarity-1]

@@ -1,75 +1,82 @@
 import * as ShowoffEmoji from "../assets/discordEmotes.json";
 import * as Discord from 'discord.js';
-import { CharacterBuild, StatType } from './model';
+import * as WEAPONS from '../assets/weapons.json';
+import { CharacterBuild, StatType, subStatNames, WeaponModel } from './model';
+import { CharacterBuildService } from './characterBuild.service';
+import { WeaponService } from './weapon.service';
+import { ArtifactService } from './artifact.service';
 
 const ascensionMaxLevels = [20, 40, 50, 60, 70, 80, 90];
 
-const getAscensionEmotes = (ascension: number): string[] /* ShowoffEmoji[] */ => {
+const statLabelMap = { 'Pyro DMG': "pyro", 'Hydro DMG': "hydro", 'Electro DMG': "electro", 'Cryo DMG': "cryo",
+  'Anemo DMG': "anemo", 'Geo DMG': "geo", 'Physical DMG': "ATK", 'Healing': "HP",
+  "ATK%": "ATK", "HP%": "HP", "DEF%": "DEF" };
+
+const getAscensionEmotes = (ascension: number): string => {
   return [
     ascension === 0 ? ShowoffEmoji.ascension00 : ascension === 1 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
     ascension < 3 ? ShowoffEmoji.ascension00 : ascension < 4 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
     ascension < 5 ? ShowoffEmoji.ascension00 : ascension < 6 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-  ];
+  ].join("");
 }
 
-const getStatLabel = (statType: StatType, value: number) => {
-  return ['HP', 'DEF', 'ATK', 'EM'].includes(statType) ? value : `${value}%`;
+const getStatDisplay = (statType: StatType, value: number, showName = false): string => {
+  const displayValue = Math.floor(value || 0);
+  const displayValue2 = ['HP', 'DEF', 'ATK', 'EM'].includes(statType) ? displayValue : `${displayValue}%`
+  return `${ShowoffEmoji[statLabelMap[statType]]} ${showName ? `**${statType}:**` : ""} ${displayValue2}`;
 }
 
 const getUsername = (message: Discord.Message) => {
-  return (message.channel as Discord.TextChannel).guild.members.cache.get(message.author.id).nickname || message.author.username;
+  return (message.channel as Discord.TextChannel).guild.members
+      .cache.get(message.author.id).nickname || message.author.username;
 }
 
 const createEmbed = (message: Discord.Message, build: CharacterBuild): Discord.MessageEmbed => {
-  const { weaponAttack, weaponSubstatValue } = { weaponAttack: 674, weaponSubstatValue: 30 }; // TODO
-  return new Discord.MessageEmbed().setColor('#ffbf00')
+  const character = CharacterBuildService.getCharacter(build.characterName);
+  const embed = new Discord.MessageEmbed().setColor('#ffbf00')
       .setAuthor(getUsername(message), message.author.avatarURL())
       .setThumbnail("attachment://char.png")
-      .setTitle(`${ShowoffEmoji.geo} ${build.character.name} C${build.constellation}`)
+      .setTitle(`${ShowoffEmoji[character.element.toLowerCase()] || ""} ${character.name} C${build.constellation}`);
 
-      .addField(`Stats:`, `${ShowoffEmoji.HP} **HP:** 3000\n${ShowoffEmoji.ATK} **ATK:** 311\n${ShowoffEmoji.DEF} **DEF:** 800\n${ShowoffEmoji.EM} **EM:** 80`, true)
-      .addField(`(lvl 50/60 ${ShowoffEmoji.ascension11}${ShowoffEmoji.ascension10}${ShowoffEmoji.ascension00})`, `${ShowoffEmoji.ER} **ER:** 160%\n${ShowoffEmoji.CR} **Crit Rate:** 14,1%\n${ShowoffEmoji.CD} **Crit DMG:** 106,6%\n${ShowoffEmoji.geo} **Geo DMG:** +46,6%`, true)
+  const buildStats = CharacterBuildService.calculateStats(build);
+  const extraStatKeys = Object.entries(buildStats).filter(([k]) => !subStatNames.includes(k));
+  embed.addField(`Stats:`, ["HP", "ATK", "DEF", "EM"].map(s =>
+      getStatDisplay(s, buildStats[s], true)).join("\n"), true)
+      .addField(`(level ${build.level} ${getAscensionEmotes(build.ascension)})`, [
+        `${ShowoffEmoji.ER} **ER:** ${Math.floor(buildStats["ER"])}%`,
+        `${ShowoffEmoji.CR} **Crit Rate:** ${Math.floor(buildStats["CR"])}%`,
+        `${ShowoffEmoji.CD} **Crit DMG:** ${Math.floor(buildStats["CD"])}%`,
+        ...extraStatKeys.map(([k, v]) => getStatDisplay(k, v, true))
+      ].join("\n"), true);
 
-      .addField(`${ShowoffEmoji[build.weapon.model.type]} ${build.weapon.model.name} R${build.weapon.refinement}`,
-          `(level ${build.weapon.level}/${ascensionMaxLevels[build.weapon.ascension - 1]} ${getAscensionEmotes(build.weapon.ascension).join("")})\n${ShowoffEmoji.ATK} ${weaponAttack} ${ShowoffEmoji[build.weapon.model.substat.type]} +${getStatLabel(build.weapon.model.substat.type, weaponSubstatValue)}`, true)
-      .addField("Talents:", `Normal: ${build.talentLevels.normalAttack}\nElemental: ${build.talentLevels.elementalSkill}\nBurst: ${build.talentLevels.elementalBurst}`, true)
+  const weaponModel = WEAPONS.find(w => w.name === build.weapon.name) as WeaponModel;
+  const weaponStats = WeaponService.calculateStats(build.weapon);
+  const weaponLevel = `${build.weapon.level}/${ascensionMaxLevels[build.weapon.ascension - 1]}`;
+  const ascension = getAscensionEmotes(build.weapon.ascension);
+  const weaponAtk = `${ShowoffEmoji.ATK} ${weaponStats["ATK"]}`;
+  const substat = Object.entries(weaponStats).filter(([k]) => k !== "ATK")
+      .map(([k, v]) => getStatDisplay(k, v)).join("\n");
+  embed.addField(`${ShowoffEmoji[weaponModel.type]} ${weaponModel.name} R${build.weapon.refinement}`,
+          `(level ${weaponLevel} ${ascension})\n${weaponAtk} ${substat}`, true);
 
-      .addField(":sunflower: Retracting Bolide", [
-        `**+20 ${ShowoffEmoji.ATK} 311**`,
-        `${ShowoffEmoji.CR} \`+15.6%\` ${ShowoffEmoji.roll2}${ShowoffEmoji.roll3}${ShowoffEmoji.roll4}${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.CD} +23.4% ${ShowoffEmoji.roll3}${ShowoffEmoji.roll1}${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.ATK} +5.8% ${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.ER} +6.5% ${ShowoffEmoji.roll3}`,
-      ].join('\n'), true)
-      .addField(":feather: Retracting Bolide", [
-        `**+20 ${ShowoffEmoji.ATK} 311**`,
-        `${ShowoffEmoji.CR} +15.6% ${ShowoffEmoji.roll3}${ShowoffEmoji.roll4}`,
-        `${ShowoffEmoji.CD} +23.4%${ShowoffEmoji.roll1}${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.ATK} +5.8%${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.ER} +6.5%${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}`,
-      ].join('\n'), true)
-      .addField(":hourglass: Retracting Bolide", [
-        `**+20 ${ShowoffEmoji.ATK} 311**`,
-        `${ShowoffEmoji.CR} +15.6% ${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.CD} +23.4% ${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.ATK} +5.8% ${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.ER} +6.5% ${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}`,
-      ].join('\n'), true)
-      .addField(":wine_glass: Retracting Bolide", [
-        `**+20 ${ShowoffEmoji.ATK} 311**`,
-        `${ShowoffEmoji.CR} +15.6% ${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.CD} +23.4% ${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.ATK} +5.8% ${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.ER} +6.5% ${ShowoffEmoji.roll3}`,
-      ].join('\n'), true)
-      .addField(":crown: Retracting Bolide", [
-        `+20 ${ShowoffEmoji.ATK}**ATK: 311**`,
-        `${ShowoffEmoji.CR} +15.6% ${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.CD} +23.4% ${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.ATK} +5.8% ${ShowoffEmoji.roll3}`,
-        `${ShowoffEmoji.ER} +6.5% ${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}${ShowoffEmoji.roll3}`,
-      ].join('\n'), true);
-}
+  embed.addField("Talents:", [
+    `Normal attack: ${build.talentLevels.normalAttack}`,
+    `Elemental skill: ${build.talentLevels.elementalSkill}`,
+    `Elemental burst: ${build.talentLevels.elementalBurst}`
+  ].join("\n"), true);
+
+  build.artifacts.forEach(art => {
+    const title = `${ShowoffEmoji[art.type]} ${art.set}`;
+    const desc = `**+${art.level} ${ShowoffEmoji[art.mainStat]} 311**`
+    const substats = Object.entries(art.subStats).map(([k, v]) => {
+      const rolls = ArtifactService.estimateSubstatRolls(k, v, art.rarity).map(i => ShowoffEmoji[`roll${i+1}`])
+      return `${getStatDisplay(k, v)} ${rolls}`;
+    }).join('\n');
+    embed.addField(title, `${desc}\n${substats}`, true);
+  });
+
+  return embed;
+};
 
 export const CharacterBuildCommand = {
   createEmbed

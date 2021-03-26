@@ -1,0 +1,26 @@
+{
+  "twoPieceBonus": {
+    "Adventurer": { "HP": 1000 },
+    "Lucky Dog": { "DEF": 100 },
+
+    "Instructor": { "EM": 80 },
+    "Berserker": { "CR": 12 },
+    "The Exile": { "ER": 20 },
+    "Defender's Will": { "DEF%": 30 },
+    "Scholar": { "ER": 20 },
+    "Resolution of Sojourner": { "ATK%": 18 },
+    "Brave Heart": { "ATK%": 18 },
+
+    "Gladiator's Finale": { "ATK%": 18 },
+    "Wanderer's Troupe": { "EM": 80 },
+    "Crimson Witch of Flames": { "Pyro DMG": 15 },
+    "Lavawalker": { "Pyro RES": 40 },
+    "Thundering Fury": { "Electro DMG": 15 },
+    "Thundersoother": { "Electro RES": 40 },
+    "Viridescent Venerer": { "Anemo DMG": 15 },
+    "Archaic Petra": { "Geo DMG": 15 },
+    "Bloodstained Chivalry": { "Physical DMG": 25 },
+    "Heart of Depth": { "Hydro DMG": 15 },
+    "Blizzard Strayer": { "Cryo DMG": 15 }
+  }
+}

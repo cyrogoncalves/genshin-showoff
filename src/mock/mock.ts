@@ -11,7 +11,7 @@ export const flower: Artifact = {
 };
 
 export const plume: Artifact = {
-  set: 'Retracting Bolide',
+  set: 'Retracing Bolide',
   level: 18,
   type: 'Plume',
   rarity: 5,
@@ -38,7 +38,7 @@ export const goblet: Artifact = {
 }
 
 export const circlet: Artifact = {
-  set: 'Retracting Bolide',
+  set: 'Retracing Bolide',
   level: 20,
   type: 'Circlet',
   rarity: 5,
@@ -47,12 +47,8 @@ export const circlet: Artifact = {
 }
 
 export const build: CharacterBuild = {
-  character: CHARACTERS.find(c => c.name === "Noelle") as Character,
-  player: {
-    id: "playerId",
-    username: "username",
-    nickname: "playerNickname",
-  },
+  characterName: "Noelle",
+  playerId: "playerId",
   talentLevels: {
     normalAttack: 1,
     elementalSkill: 1,
@@ -69,16 +65,7 @@ export const build: CharacterBuild = {
     circlet
   ],
   weapon: {
-    model: {
-      name: "Skyward Pride",
-      type: 'Claymore',
-      rarity: 5,
-      baseAtk: 48,
-      substat: {
-        type: 'ER',
-        base: 8
-      },
-    },
+    name: "Skyward Pride",
     level: 90,
     ascension: 6,
     refinement: 1

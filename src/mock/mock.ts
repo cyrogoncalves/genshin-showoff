@@ -1,5 +1,4 @@
-import { Artifact, Character, CharacterBuild } from '../model';
-import * as CHARACTERS from '../../assets/characters.json';
+import { Artifact, CharacterBuild } from '../model';
 
 export const flower: Artifact = {
   set: 'Retracting Bolide',

@@ -17,21 +17,21 @@ const possibleCombinations = (possibleRollsCount: number, count: number, num: nu
 };
 
 const estimateSubstatRolls = (type: string, value: number, rarity = 5) => {
-  for (let count = 1; count < 5; count++) {
-    const combinations = possibleCombinations(ARTIFACT_ROLLS[type][rarity-1].length, count);
-    const matchedCombination = combinations.find(c => c.reduce((sum, i) =>
-        sum + ARTIFACT_ROLLS[type][rarity-1][i], 0) === value);
-    if (matchedCombination)
-      return matchedCombination;
+  const possibleRolls = ARTIFACT_ROLLS[type][rarity - 1];
+  let approx = null;
+  for (let count = 1; count < 6; count++) {
+    for (let combination of possibleCombinations(possibleRolls.length, count)) {
+      const rollSum = combination.reduce((sum, i) => sum + possibleRolls[i], 0);
+      const diff = Math.abs(value - rollSum);
+      if (!approx || diff < approx.diff)
+        approx = { diff, combination };
+    }
   }
-  return null;
-};
-
-const estimateRolls = (art: Artifact): number[][] => {
-  return Object.keys(art.subStats).map(type =>  estimateSubstatRolls(type, art.subStats[type], art.rarity));
+  return approx.combination;
 };
 
 const getStats = (art: Artifact): BuildStats => {
+  if (!art) return {};
   const stats = { ...art.subStats };
   const scalingStat = art.mainStat.replace(/Pyro|Hydro|Electro|Anemo|Cryo|Geo/, 'Elemental');
   stats[art.mainStat] = ARTIFACT_SCALING_STATS[art.rarity - 1][scalingStat][art.level];
@@ -48,7 +48,6 @@ const getBonusStats = (artifacts: Artifact[]): BuildStats[] => {
 export const ArtifactService = {
   possibleCombinations,
   estimateSubstatRolls,
-  estimateRolls,
   getStats,
   getBonusStats
 }

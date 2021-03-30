@@ -30,11 +30,15 @@ const estimateSubstatRolls = (type: string, value: number, rarity = 5) => {
   return approx.combination;
 };
 
+const getMainStatValue = (art: Artifact): number => {
+  const scalingStat = art.mainStat.replace(/Pyro|Hydro|Electro|Anemo|Cryo|Geo/, 'Elemental');
+  return ARTIFACT_SCALING_STATS[art.rarity - 1][scalingStat][art.level]
+}
+
 const getStats = (art: Artifact): BuildStats => {
   if (!art) return {};
   const stats = { ...art.subStats };
-  const scalingStat = art.mainStat.replace(/Pyro|Hydro|Electro|Anemo|Cryo|Geo/, 'Elemental');
-  stats[art.mainStat] = ARTIFACT_SCALING_STATS[art.rarity - 1][scalingStat][art.level];
+  stats[art.mainStat] = getMainStatValue(art);
   return stats;
 }
 
@@ -48,6 +52,7 @@ const getBonusStats = (artifacts: Artifact[]): BuildStats[] => {
 export const ArtifactService = {
   possibleCombinations,
   estimateSubstatRolls,
+  getMainStatValue,
   getStats,
   getBonusStats
 }

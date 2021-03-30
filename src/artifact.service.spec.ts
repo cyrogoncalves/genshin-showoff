@@ -40,6 +40,13 @@ describe('ArtifactService', () => {
     it('for CR:15.6%', () => expect(f('CR', 15.6)).toEqual([3, 3, 3, 3])); //
   });
 
+  describe("get main stat", () => {
+    it("calculates main stat value", () => {
+      const value = ArtifactService.getMainStatValue(build.artifacts[0]);
+      expect(value).toBe(3967);
+    });
+  });
+
   describe("get stats", () => {
     it("returns empty object for null artifact", () => {
       const stats = ArtifactService.getStats(null);

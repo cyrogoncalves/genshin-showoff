@@ -1,5 +1,7 @@
 import * as Discord from 'discord.js';
 import { ArtifactCommands } from './artifact.commands';
+import { CharacterBuildCommand } from './characterBuild.command';
+import { build } from "./mock/mock";
 
 require("dotenv").config();
 
@@ -20,6 +22,11 @@ const commands: {
     exe: ArtifactCommands.add
   }
 ];
+
+const getUsername = (message: Discord.Message) => {
+  return (message.channel as Discord.TextChannel).guild.members
+      .cache.get(message.author.id).nickname || message.author.username;
+}
 
 const prefix = "-showoff";
 const cooldownTime = 8000;
@@ -52,25 +59,22 @@ bot.on('message', async message => {
   // const cmdName = args.shift().toLowerCase();
   // const command = commands.find(cmd => cmd.metadata.name === cmdName || cmd.metadata.aliases?.some(a => a === cmdName));
   // if (!command) return;
-  //
-  // try {
-  //   command.exe(message, args);
-  // } catch (err) {
-  //   console.error(err);
-  //   return message.channel.send(`:x: | **${err.message || msg.ERROR_OCCURRED}**`);
-  // }
-
-
-  console.log(message.guild.emojis.cache.map(emoji => `${emoji.name} = "<:${emoji.identifier}>",`).join('\n'));
-
-  await message.channel.send({
-    embed,
-    files: [{
-      attachment:'assets/noelle-avatar.png',
-      name:'char.png'
-    }]
-  });
-
+  try {
+    // command.exe(message, args);
+    const embed = CharacterBuildCommand.createEmbed(build);
+    embed.setAuthor(getUsername(message), message.author.avatarURL())
+        .setThumbnail("attachment://char.png")
+    await message.channel.send({
+      embed,
+      files: [{
+        attachment:'assets/noelle-avatar.png',
+        name:'char.png'
+      }]
+    });
+  } catch (err) {
+    console.error(err);
+    return message.channel.send(`:x: | **${err.message || msg.ERROR_OCCURRED}**`);
+  }
 });
 
 bot.on('ready', () => {

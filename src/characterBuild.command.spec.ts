@@ -1,33 +1,14 @@
 import { CharacterBuildCommand } from "./characterBuild.command";
 import { build } from "./mock/mock";
-import * as Discord from 'discord.js';
-
-const mockMessage = {
-  channel: {
-    send: (
-        content: Discord.APIMessageContentResolvable | (Discord.MessageOptions & { split?: false }) | Discord.MessageAdditions,
-    ): Promise<Discord.Message> => null,
-    guild: {
-      members: {
-        cache: new Discord.Collection<Discord.Snowflake, Discord.GuildMember>([["id", { nickname: "nickname"} as Discord.GuildMember]])
-      }
-    }
-  },
-  author: {
-    id: "id",
-    username: "username",
-    avatarURL: () => "avatarURL"
-  }
-} as Discord.Message;
 
 describe('CharacterBuildCommand', () => {
   describe('createEmbed', () => {
     it('works', () => {
-      const embed = CharacterBuildCommand.createEmbed(mockMessage, build);
+      const embed = CharacterBuildCommand.createEmbed(build);
       expect(embed).toBeTruthy();
-      expect(embed.author.name).toBe("nickname");
-      expect(embed.author.iconURL).toBe("avatarURL");
-      expect(embed.thumbnail).toEqual({"url": "attachment://char.png"});
+      // expect(embed.author.name).toBe("nickname");
+      // expect(embed.author.iconURL).toBe("avatarURL");
+      // expect(embed.thumbnail).toEqual({"url": "attachment://char.png"});
       expect(embed.title).toBe("<:geo:814601970617811015> Noelle C6");
 
       // .addField(`Stats:`, `${ShowoffEmoji.HP} **HP:** 3000\n${ShowoffEmoji.ATK} **ATK:** 311\n${ShowoffEmoji.DEF} **DEF:** 800\n${ShowoffEmoji.EM} **EM:** 80`, true)

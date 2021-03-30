@@ -6,11 +6,11 @@ import { CharacterBuildService } from './characterBuild.service';
 import { WeaponService } from './weapon.service';
 import { ArtifactService } from './artifact.service';
 
-const ascensionMaxLevels = [20, 40, 50, 60, 70, 80, 90];
-
-const statLabelMap = { 'Pyro DMG': "pyro", 'Hydro DMG': "hydro", 'Electro DMG': "electro", 'Cryo DMG': "cryo",
+const statLabelMap = {
+  'Pyro DMG': "pyro", 'Hydro DMG': "hydro", 'Electro DMG': "electro", 'Cryo DMG': "cryo",
   'Anemo DMG': "anemo", 'Geo DMG': "geo", 'Physical DMG': "ATK", 'Healing': "HP",
-  "ATK%": "ATK", "HP%": "HP", "DEF%": "DEF" };
+  "ATK%": "ATK", "HP%": "HP", "DEF%": "DEF"
+};
 
 const getAscensionEmotes = (ascension: number): string => {
   return [
@@ -21,21 +21,15 @@ const getAscensionEmotes = (ascension: number): string => {
 }
 
 const getStatDisplay = (statType: StatType, value: number, showName = false): string => {
-  const displayValue = Math.floor(value || 0);
+  const displayValue = Math.round(value * 10 || 0) / 10;
   const displayValue2 = ['HP', 'DEF', 'ATK', 'EM'].includes(statType) ? displayValue : `${displayValue}%`
-  return `${ShowoffEmoji[statLabelMap[statType]]} ${showName ? `**${statType}:**` : ""} ${displayValue2}`;
+  const emote = ShowoffEmoji[statLabelMap[statType] || statType] || statType;
+  return `${emote} ${showName ? `**${statType}:**` : ""} ${displayValue2}`;
 }
 
-const getUsername = (message: Discord.Message) => {
-  return (message.channel as Discord.TextChannel).guild.members
-      .cache.get(message.author.id).nickname || message.author.username;
-}
-
-const createEmbed = (message: Discord.Message, build: CharacterBuild): Discord.MessageEmbed => {
+const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
   const character = CharacterBuildService.getCharacter(build.characterName);
   const embed = new Discord.MessageEmbed().setColor('#ffbf00')
-      .setAuthor(getUsername(message), message.author.avatarURL())
-      .setThumbnail("attachment://char.png")
       .setTitle(`${ShowoffEmoji[character.element.toLowerCase()] || ""} ${character.name} C${build.constellation}`);
 
   const buildStats = CharacterBuildService.calculateStats(build);
@@ -43,20 +37,20 @@ const createEmbed = (message: Discord.Message, build: CharacterBuild): Discord.M
   embed.addField(`Stats:`, ["HP", "ATK", "DEF", "EM"].map(s =>
       getStatDisplay(s, buildStats[s], true)).join("\n"), true)
       .addField(`(level ${build.level} ${getAscensionEmotes(build.ascension)})`, [
-        `${ShowoffEmoji.ER} **ER:** ${Math.floor(buildStats["ER"])}%`,
-        `${ShowoffEmoji.CR} **Crit Rate:** ${Math.floor(buildStats["CR"])}%`,
-        `${ShowoffEmoji.CD} **Crit DMG:** ${Math.floor(buildStats["CD"])}%`,
+        `${ShowoffEmoji.ER} **ER:** ${Math.round(buildStats["ER"] * 10 || 0) / 10}%`,
+        `${ShowoffEmoji.CR} **Crit Rate:** ${Math.round(buildStats["CR"] * 10 || 0) / 10}%`,
+        `${ShowoffEmoji.CD} **Crit DMG:** ${Math.round(buildStats["CD"] * 10 || 0) / 10}%`,
         ...extraStatKeys.map(([k, v]) => getStatDisplay(k, v, true))
       ].join("\n"), true);
 
   const weaponModel = WEAPONS.find(w => w.name === build.weapon.name) as WeaponModel;
   const weaponStats = WeaponService.calculateStats(build.weapon);
-  const weaponLevel = `${build.weapon.level}/${ascensionMaxLevels[build.weapon.ascension - 1]}`;
+  const weaponLevel = build.weapon.level;
   const ascension = getAscensionEmotes(build.weapon.ascension);
   const weaponAtk = `${ShowoffEmoji.ATK} ${weaponStats["ATK"]}`;
   const substat = Object.entries(weaponStats).filter(([k]) => k !== "ATK")
       .map(([k, v]) => getStatDisplay(k, v)).join("\n");
-  embed.addField(`${ShowoffEmoji[weaponModel.type]} ${weaponModel.name} R${build.weapon.refinement}`,
+  embed.addField(`${ShowoffEmoji[weaponModel.type.toLowerCase()]} ${weaponModel.name} R${build.weapon.refinement}`,
           `(level ${weaponLevel} ${ascension})\n${weaponAtk} ${substat}`, true);
 
   embed.addField("Talents:", [
@@ -67,10 +61,10 @@ const createEmbed = (message: Discord.Message, build: CharacterBuild): Discord.M
 
   build.artifacts.forEach(art => {
     const title = `${ShowoffEmoji[art.type]} ${art.set}`;
-    const desc = `**+${art.level} ${ShowoffEmoji[art.mainStat]} 311**`
+    const desc = `**+${art.level} ${getStatDisplay(art.mainStat, ArtifactService.getMainStatValue(art))}**`
     const substats = Object.entries(art.subStats).map(([k, v]) => {
       const rolls = ArtifactService.estimateSubstatRolls(k, v, art.rarity).map(i => ShowoffEmoji[`roll${i+1}`])
-      return `${getStatDisplay(k, v)} ${rolls}`;
+      return `${getStatDisplay(k, v)} ${rolls.reverse().join("")}`;
     }).join('\n');
     embed.addField(title, `${desc}\n${substats}`, true);
   });

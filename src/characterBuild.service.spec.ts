@@ -8,4 +8,11 @@ describe('CharacterBuildService', () => {
     expect(Math.floor(stats.DEF)).toBe(1766);
     expect(Math.round(stats.ATK)).toBe(1500); // 1501
   });
+
+  describe("getCharacter", () => {
+    it("gets character data", () => {
+      const character = CharacterBuildService.getCharacter("Ganyu");
+      expect(character.element).toBe("Cryo");
+    });
+  });
 });

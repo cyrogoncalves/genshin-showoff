@@ -7,13 +7,14 @@ const getCharacter = (name: string): Character => CHARACTERS.find(c => c.name ==
 
 const calculateStats = (build: CharacterBuild): BuildStats => {
   const character = getCharacter(build.characterName);
+  const initial = { "ER": 100, "CR": 5, "CD": 50};
   const baseStats = character.stats[build.ascension][build.level];
   const artStats = build.artifacts.map(art => ArtifactService.getStats(art));
   const artBonusStats = ArtifactService.getBonusStats(build.artifacts);
   const weaponStats = WeaponService.calculateStats(build.weapon);
 
   const stats = {};
-  [baseStats, ...artStats, ...artBonusStats, weaponStats].forEach(s =>
+  [initial, baseStats, ...artStats, ...artBonusStats, weaponStats].forEach(s =>
     Object.keys(s).forEach(statName => stats[statName] = (stats[statName] || 0) + s[statName]));
 
   stats["HP"] += baseStats["HP"] * (stats["HP%"] / 100);

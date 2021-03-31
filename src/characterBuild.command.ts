@@ -21,8 +21,8 @@ const getAscensionEmotes = (ascension: number): string => {
 }
 
 const getStatDisplay = (statType: StatType, value: number, showName = false): string => {
-  const displayValue = Math.round(value * 10 || 0) / 10;
-  const displayValue2 = ['HP', 'DEF', 'ATK', 'EM'].includes(statType) ? displayValue : `${displayValue}%`
+  const displayValue2 = ['HP', 'DEF', 'ATK', 'EM'].includes(statType)
+      ? Math.round(value) : `${Math.round(value * 10 || 0) / 10}%`;
   const emote = ShowoffEmoji[statLabelMap[statType] || statType] || statType;
   return `${emote} ${showName ? `**${statType}:**` : ""} ${displayValue2}`;
 }
@@ -34,30 +34,29 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
 
   const buildStats = CharacterBuildService.calculateStats(build);
   const extraStatKeys = Object.entries(buildStats).filter(([k]) => !subStatNames.includes(k));
-  embed.addField(`Stats:`, ["HP", "ATK", "DEF", "EM"].map(s =>
-      getStatDisplay(s, buildStats[s], true)).join("\n"), true)
-      .addField(`(level ${build.level} ${getAscensionEmotes(build.ascension)})`, [
-        `${ShowoffEmoji.ER} **ER:** ${Math.round(buildStats["ER"] * 10 || 0) / 10}%`,
-        `${ShowoffEmoji.CR} **Crit Rate:** ${Math.round(buildStats["CR"] * 10 || 0) / 10}%`,
-        `${ShowoffEmoji.CD} **Crit DMG:** ${Math.round(buildStats["CD"] * 10 || 0) / 10}%`,
-        ...extraStatKeys.map(([k, v]) => getStatDisplay(k, v, true))
-      ].join("\n"), true);
-
-  const weaponModel = WEAPONS.find(w => w.name === build.weapon.name) as WeaponModel;
-  const weaponStats = WeaponService.calculateStats(build.weapon);
-  const weaponLevel = build.weapon.level;
-  const ascension = getAscensionEmotes(build.weapon.ascension);
-  const weaponAtk = `${ShowoffEmoji.ATK} ${weaponStats["ATK"]}`;
-  const substat = Object.entries(weaponStats).filter(([k]) => k !== "ATK")
-      .map(([k, v]) => getStatDisplay(k, v)).join("\n");
-  embed.addField(`${ShowoffEmoji[weaponModel.type.toLowerCase()]} ${weaponModel.name} R${build.weapon.refinement}`,
-          `(level ${weaponLevel} ${ascension})\n${weaponAtk} ${substat}`, true);
-
+  embed.addField(`(level ${build.level} ${getAscensionEmotes(build.ascension)})`,
+      ["HP", "ATK", "DEF", "EM"].map(s => getStatDisplay(s, buildStats[s], true)).join("\n"), true);
+  embed.addField("\u200B", [
+    `${ShowoffEmoji.ER} **ER:** ${Math.round(buildStats["ER"] * 10 || 0) / 10}%`,
+    `${ShowoffEmoji.CR} **Crit Rate:** ${Math.round(buildStats["CR"] * 10 || 0) / 10}%`,
+    `${ShowoffEmoji.CD} **Crit DMG:** ${Math.round(buildStats["CD"] * 10 || 0) / 10}%`,
+    ...extraStatKeys.map(([k, v]) => getStatDisplay(k, v, true))
+  ].join("\n"), true)
   embed.addField("Talents:", [
     `Normal attack: ${build.talentLevels.normalAttack}`,
     `Elemental skill: ${build.talentLevels.elementalSkill}`,
     `Elemental burst: ${build.talentLevels.elementalBurst}`
   ].join("\n"), true);
+
+  const weaponModel = WEAPONS.find(w => w.name === build.weapon.name) as WeaponModel;
+  const weaponTypeEmote = ShowoffEmoji[weaponModel.type.toLowerCase()];
+  const weaponStats = WeaponService.calculateStats(build.weapon);
+  const ascension = getAscensionEmotes(build.weapon.ascension);
+  const weaponAtk = `${ShowoffEmoji.ATK} **ATK:** ${weaponStats["ATK"]}`;
+  const substat = Object.entries(weaponStats).filter(([k]) => k !== "ATK")
+      .map(([k, v]) => getStatDisplay(k, v, true)).join("\n");
+  embed.addField(`${weaponTypeEmote} ${weaponModel.name} R${build.weapon.refinement}`,
+      `(level ${build.weapon.level} ${ascension})\n${weaponAtk}\n${substat}`, true);
 
   build.artifacts.forEach(art => {
     const title = `${ShowoffEmoji[art.type]} ${art.set}`;

@@ -13,3 +13,6 @@ export const parseArgs = (args: string[], separator = "="): {[propName: string]:
 
 export const guard = <T extends string>(possibleValues: string[], value): value is T =>
     typeof value === 'string' && possibleValues.includes(value);
+
+export const capitalize = (string: string): string =>
+    string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();

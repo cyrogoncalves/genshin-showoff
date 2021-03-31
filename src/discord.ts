@@ -1,32 +1,11 @@
-import * as Discord from 'discord.js';
-import { ArtifactCommands } from './artifact.commands';
-import { CharacterBuildCommand } from './characterBuild.command';
-import { build } from "./mock/mock";
-
 require("dotenv").config();
+import * as Discord from 'discord.js';
+import { CharacterBuildCommand } from './characterBuild.command';
+import './mongodb';
 
 const msg = require(`../assets/${process.env.LOCALE || 'en'}.messages.json`);
 
-const commands: {
-  metadata: {
-    name: string;
-    description: string;
-    aliases?: string[];
-    usage?: string;
-  }
-  permissions?: string[];
-  exe: (message: Discord.Message, args: string[]) => void;
-}[] = [
-  {
-    metadata: msg.commands.ADD_ARTIFACT,
-    exe: ArtifactCommands.add
-  }
-];
-
-const getUsername = (message: Discord.Message) => {
-  return (message.channel as Discord.TextChannel).guild.members
-      .cache.get(message.author.id).nickname || message.author.username;
-}
+const commands = [CharacterBuildCommand];
 
 const prefix = "-showoff";
 const cooldownTime = 8000;
@@ -55,30 +34,17 @@ bot.on('message', async message => {
       return; // muted
   }
 
-  // const args = message.content.slice(prefix.length).trim().split(/\s+/);
-  // const cmdName = args.shift().toLowerCase();
-  // const command = commands.find(cmd => cmd.metadata.name === cmdName || cmd.metadata.aliases?.some(a => a === cmdName));
-  // if (!command) return;
+  const args = message.content.slice(prefix.length).trim().split(/\s+/);
   try {
-    // command.exe(message, args);
-    const embed = CharacterBuildCommand.createEmbed(build);
-    embed.setAuthor(getUsername(message), message.author.avatarURL())
-        .setThumbnail("attachment://char.png")
-    await message.channel.send({
-      embed,
-      files: [{
-        attachment:'assets/noelle-avatar.png',
-        name:'char.png'
-      }]
-    });
+    commands.forEach(c => c.exe(message, args));
   } catch (err) {
     console.error(err);
     return message.channel.send(`:x: | **${err.message || msg.ERROR_OCCURRED}**`);
   }
 });
 
-bot.on('ready', () => {
-  console.log(`READY!\n\nCommands: ${commands.length}\nGuilds: ${bot.guilds.cache.size}\nUsers: ${bot.users.cache.size}`);
+bot.once('ready', () => {
+  console.log(`READY! Commands: ${commands.length} Guilds: ${bot.guilds.cache.size} Users: ${bot.users.cache.size}`);
 });
 
 bot.login(process.env.DISCORD_TOKEN);

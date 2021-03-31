@@ -1,10 +1,13 @@
-import * as ShowoffEmoji from "../assets/discordEmotes.json";
 import * as Discord from 'discord.js';
+import * as ShowoffEmoji from "../assets/discordEmotes.json";
 import * as WEAPONS from '../assets/weapons.json';
 import { CharacterBuild, StatType, subStatNames, WeaponModel } from './model';
 import { CharacterBuildService } from './characterBuild.service';
 import { WeaponService } from './weapon.service';
 import { ArtifactService } from './artifact.service';
+import { capitalize } from './util';
+import { getUsername } from './discord-util';
+import { db } from './mongodb';
 
 const statLabelMap = {
   'Pyro DMG': "pyro", 'Hydro DMG': "hydro", 'Electro DMG': "electro", 'Cryo DMG': "cryo",
@@ -25,6 +28,29 @@ const getStatDisplay = (statType: StatType, value: number, showName = false): st
       ? Math.round(value) : `${Math.round(value * 10 || 0) / 10}%`;
   const emote = ShowoffEmoji[statLabelMap[statType] || statType] || statType;
   return `${emote} ${showName ? `**${statType}:**` : ""} ${displayValue2}`;
+}
+
+const exe = async (message: Discord.Message, args: string[]) => {
+  const characterName = capitalize(args[0]?.replace("_", ""));
+  if (!CharacterBuildService.getCharacter(characterName)) return;
+
+  const playerId = message.author.id;
+  let build = await db.collection<CharacterBuild>("builds").findOne({playerId, characterName});
+  // -showoff noelle
+  // -showoff noelle C2 level=90 talents=7,7,8 TODO
+  // -showoff noelle flower=Bolide,CR:15.6,CD:23.4,ATK%:5.8,ER:6.5 TODO
+  // -showoff noelle weapon=Skyward_Pride,level:90,R2 TODO
+
+  const embed = createEmbed(build);
+  embed.setAuthor(getUsername(message), message.author.avatarURL())
+      .setThumbnail("attachment://char.png")
+  await message.channel.send({
+    embed,
+    files: [{
+      attachment:'assets/noelle-avatar.png', // TODO
+      name:'char.png'
+    }]
+  });
 }
 
 const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
@@ -72,5 +98,6 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
 };
 
 export const CharacterBuildCommand = {
-  createEmbed
+  createEmbed,
+  exe
 }

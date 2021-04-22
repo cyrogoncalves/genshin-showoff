@@ -1,11 +1,11 @@
 import * as Discord from 'discord.js';
 import * as ShowoffEmoji from "../assets/discordEmotes.json";
 import * as WEAPONS from '../assets/weapons.json';
-import { CharacterBuild, StatType, subStatNames, WeaponModel } from './model';
+import { CharacterBuild, Level, levelValues, StatType, subStatNames, WeaponModel } from './model';
 import { CharacterBuildService } from './characterBuild.service';
 import { WeaponService } from './weapon.service';
 import { ArtifactService } from './artifact.service';
-import { capitalize } from './util';
+import { capitalize, guard } from './util';
 import { getUsername } from './discord-util';
 import { db } from './mongodb';
 
@@ -35,11 +35,37 @@ const exe = async (message: Discord.Message, args: string[]) => {
   if (!CharacterBuildService.getCharacter(characterName)) return;
 
   const playerId = message.author.id;
-  let build = await db.collection<CharacterBuild>("builds").findOne({playerId, characterName});
-  // -showoff noelle
-  // -showoff noelle C2 level=90 talents=7,7,8 TODO
-  // -showoff noelle flower=Bolide,CR:15.6,CD:23.4,ATK%:5.8,ER:6.5 TODO
-  // -showoff noelle weapon=Skyward_Pride,level:90,R2 TODO
+  const collection = db.collection<CharacterBuild>("builds");
+  let build = await collection.findOne({playerId, characterName});
+
+  // TODO if doesn't exist create it with default values
+
+  // edit
+  const updates: Partial<CharacterBuild> = {};
+  for (let arg of args.slice(1)) {
+    if (arg.match(/C\d/)) {
+      updates.constellation = Number(arg.slice(1));
+    }
+    if (arg.startsWith("level=")) {
+      const level = Number(arg.slice(6));
+      if (!guard<Level>(levelValues, level)) throw Error("Invalid level");
+      updates.level = level;
+    }
+    if (arg.startsWith("talents=")) {
+      const talents = arg.slice(8).split(",").map(s => Number(s));
+      if (!arg.match(/^\d,\d,\d$/)) throw Error("Invalid talents (must be like 'talents=7,7,8'");
+      updates.talentLevels = { normalAttack: talents[0], elementalSkill: talents[1], elementalBurst: talents[2] };
+    }
+
+    if (arg.startsWith("weapon=")) {
+      const weaponArgs = arg.slice(7).split(",")
+    }
+    // -showoff noelle weapon=Skyward_Pride,level:90,R2 TODO
+    // -showoff noelle flower=Bolide,CR:15.6,CD:23.4,ATK%:5.8,ER:6.5 TODO
+  }
+  if (Object.keys(updates).length) {
+    await collection.updateOne({playerId, characterName}, {$set: updates});
+  }
 
   const embed = createEmbed(build);
   embed.setAuthor(getUsername(message), message.author.avatarURL())

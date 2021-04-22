@@ -1,13 +1,12 @@
 const weaponTypeNames = ['Sword', 'Bow', 'Polearm', 'Catalyst', 'Claymore'] as const;
-
-export const subStatNames = ['HP', 'HP%', 'DEF', 'DEF%', 'ATK', 'ATK%', 'EM', 'ER', 'CD', 'CR'];
-
-export type Level = 1 | 20 | 40 | 50 | 60 | 70 | 80 | 90; // [1-90]
-
 export type WeaponType = typeof weaponTypeNames[number];
+
+export const levelValues = [1, 20, 40, 50, 60, 70, 80, 90] as const;
+export type Level = typeof levelValues[number]; // [1-90]
 
 export type ArtifactType = 'Flower' | 'Plume' | 'Sands' | 'Goblet' | 'Circlet';
 
+export const subStatNames = ['HP', 'HP%', 'DEF', 'DEF%', 'ATK', 'ATK%', 'EM', 'ER', 'CD', 'CR'];
 export type SubStatType = typeof subStatNames[number];
 
 export type StatType = SubStatType | 'Healing' | 'Pyro DMG' | 'Hydro DMG' | 'Electro DMG' | 'Cryo DMG' | 'Anemo DMG' | 'Geo DMG' | 'Physical DMG';
@@ -22,7 +21,7 @@ export interface Character {
   readonly element?: 'Pyro' | 'Hydro' | 'Electro' | 'Cryo' | 'Anemo' | 'Geo' | 'Dendro'; // Element not specified for traveller
   readonly weaponType: WeaponType;
   readonly stats: {
-    [key in Level]: BuildStats
+    readonly [level in Level]: BuildStats
   }[]
 }
 

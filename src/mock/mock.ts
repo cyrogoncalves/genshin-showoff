@@ -10,7 +10,7 @@ export const flower: Artifact = {
 };
 
 export const plume: Artifact = {
-  set: 'Retracing Bolide',
+  set: 'Archaic Petra',
   level: 18,
   type: 'Plume',
   rarity: 5,
@@ -37,7 +37,7 @@ export const goblet: Artifact = {
 }
 
 export const circlet: Artifact = {
-  set: 'Retracing Bolide',
+  set: 'Archaic Petra',
   level: 20,
   type: 'Circlet',
   rarity: 5,

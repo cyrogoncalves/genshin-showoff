@@ -1,7 +1,21 @@
 import { CharacterBuildCommand } from "./characterBuild.command";
 import { build } from "./mock/mock";
+import { build as build2 } from "./mock/mock2";
+
+const input = `childe talents=5,10,9
+weapon viridescent
+flower maiden em=40 cd=7 atk%=9.3 cr=12.1
+plume depth def=16 cd=5.4 hp=478 cr=14
+sands gladiator atk% cd=29.5 cr=7.4 hp=299 atk=16
+goblet blizzard hydro cr=7.8 atk=18 hp=508 cd=22.5
+circlet depth cd em=21 cr=12.1 def=37 atk%=4.1`;
 
 describe('CharacterBuildCommand', () => {
+  describe("parseBuild", () => {
+    const update = CharacterBuildCommand.parseBuild(input.split(/\s+|\n/))
+    expect(update).toStrictEqual(build2)
+  })
+
   describe('createEmbed', () => {
     it('works', () => {
       const embed = CharacterBuildCommand.createEmbed(build);

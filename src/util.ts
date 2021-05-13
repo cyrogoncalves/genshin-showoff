@@ -1,3 +1,5 @@
+import * as WEAPONS from '../assets/weapons.json';
+
 export function format(msg: string, params: {[propName: string]: any}): string {
   return Object.entries(params).reduce((str, [k, v]) => str.replace(`$${k}`, v), msg);
 }
@@ -19,3 +21,6 @@ export const guard = <T>(possibleValues: readonly any[], value, type = "string")
 
 export const capitalize = (string: string): string =>
     string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+
+export const match = (s: string, toMatch: string[]): string =>
+    toMatch.find(m => m.toLowerCase().includes(s.toLowerCase().replace("_", " ")));

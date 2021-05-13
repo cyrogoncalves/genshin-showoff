@@ -62,7 +62,7 @@ describe('ArtifactService', () => {
   describe("get bonus stats", () => {
     it("get bonus from Defender's will", () => {
       const bonusStats = ArtifactService.getBonusStats(build.artifacts)
-      expect(bonusStats).toEqual([{'DEF%': 30}]);
+      expect(bonusStats).toEqual([{"Geo DMG": 15}, {'DEF%': 30}]);
     });
   });
 });

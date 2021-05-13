@@ -1,7 +1,7 @@
 import { Artifact, CharacterBuild } from '../model';
 
 export const flower: Artifact = {
-  set: 'Retracting Bolide',
+  set: 'Retracing Bolide',
   level: 16,
   type: 'Flower',
   rarity: 5,

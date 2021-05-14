@@ -2,12 +2,16 @@ import * as Discord from 'discord.js';
 import * as ShowoffEmoji from "../assets/discordEmotes.json";
 import * as WEAPONS from '../assets/weapons.json';
 import * as ARTIFACTS from "../assets/artifacts.json";
+import * as CHARACTERS from "../assets/characters.json";
 import {
+  artifactTypeNames,
   CharacterBuild,
   Level,
-  levelValues, mainStatNames,
+  levelValues,
+  mainStatNames,
   StatType,
   subStatNames,
+  Weapon,
   WeaponLevel,
   weaponLevelValues,
   WeaponModel
@@ -40,14 +44,17 @@ const getStatDisplay = (statType: StatType, value: number, showName = false): st
   return `${emote} ${showName ? `**${statType}:**` : ""} ${displayValue2}`;
 }
 
-const parseBuild = (args: string[], mode = "Build"): Partial<CharacterBuild> => {
+const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
+    { mode: string; updates: CharacterBuild } => {
   const modes = ["weapon", "flower", "plume", "sands", "goblet", "circlet"];
-  const updates: Partial<CharacterBuild> = {};
+  let updates: CharacterBuild;
   for (let arg of args.slice(1)) {
     if (modes.includes(arg.toLowerCase())) {
       mode = capitalize(arg);
       continue;
     }
+
+    updates = updates || build;
 
     switch (mode) {
       case "Build":
@@ -78,10 +85,6 @@ const parseBuild = (args: string[], mode = "Build"): Partial<CharacterBuild> => 
         }
         break;
       case "Weapon":
-        if (!updates.weapon) {
-          updates.weapon = {name: null, level:90, ascension:6, refinement:1};
-        }
-
         if (arg.startsWith("level=")) {
           const level = Number(arg.slice(6));
           if (!guard<WeaponLevel>(weaponLevelValues, level))
@@ -109,16 +112,12 @@ const parseBuild = (args: string[], mode = "Build"): Partial<CharacterBuild> => 
       case "Sands":
       case "Goblet":
       case "Circlet":
-        if (!updates.artifacts) {
-          updates.artifacts = [];
-        }
+        const idx = artifactTypeNames.indexOf(mode);
+        if (!updates.artifacts[idx])
+          updates.artifacts[idx] = { set: null, level: 20, rarity: 5, type: mode, subStats: {},
+            mainStat: mode === 'Flower' ? "HP" : mode === "Plume" ? "ATK" : null };
+        const art = updates.artifacts[idx];
 
-        let art = updates.artifacts.find(a => a.type === mode);
-        if (!art) {
-          art = {set:null, level:20, rarity:5, type: mode, subStats:{},
-            mainStat: mode === 'Flower' ? "HP" : mode === "Plume" ? "ATK" : null};
-          updates.artifacts.push(art);
-        }
         const mainStat = match(arg, mainStatNames);
         const setName = match(arg, Object.keys(ARTIFACTS.sets));
         if (mainStat) {
@@ -144,27 +143,35 @@ const parseBuild = (args: string[], mode = "Build"): Partial<CharacterBuild> => 
         }
         break;
     }
-
-    // TODO validations (level-ascension)
   }
-  return updates;
+  return { updates, mode };
 }
 
 const exe = async (message: Discord.Message, args: string[]) => {
-  const characterName = capitalize(args[0]?.replace("_", ""));
-  if (!CharacterBuildService.getCharacter(characterName)) return;
+  const characterName = match(args[0], CHARACTERS.map(c => c.name));
+  const character = CharacterBuildService.getCharacter(characterName);
+  if (!character) return;
 
   const playerId = message.author.id;
   const collection = db.collection<CharacterBuild>("builds");
-  let build = await collection.findOne({playerId, characterName});
-  // TODO if doesn't exist create it with default values
-  const updates = parseBuild(args);
-  if (Object.keys(updates).length) { // edit
-    await collection.updateOne({playerId, characterName}, {$set: updates});
+  const build = await collection.findOne({playerId, characterName});
+
+  const { mode, updates } = parseBuild(args, build || CharacterBuildService.createDefault(character, playerId));
+
+  if (updates) {
+    // TODO validations (level-ascension)
+
+    if (build) {
+      await collection.updateOne({playerId, characterName}, {$set: updates});
+    } else {
+      await collection.insertOne(updates);
+    }
+  } else if (!build) {
+    return message.channel.send(`**:exclamation: | Build not found.**`);
   }
 
-  const embed = createEmbed(build);
-  embed.setAuthor(getUsername(message), message.author.avatarURL())
+  const embed = createEmbed(build || updates)
+      .setAuthor(getUsername(message), message.author.avatarURL())
       .setThumbnail("attachment://char.png")
   await message.channel.send({
     embed,
@@ -194,7 +201,7 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
     `Normal attack: ${build.talentLevels.normalAttack}`,
     `Elemental skill: ${build.talentLevels.elementalSkill}`,
     `Elemental burst: ${build.talentLevels.elementalBurst}`
-  ].join("\n"), true);
+  ].join("\n"), true); // TODO crowns
 
   const weaponModel = WEAPONS.find(w => w.name === build.weapon.name) as WeaponModel;
   const weaponTypeEmote = ShowoffEmoji[weaponModel.type.toLowerCase()];

@@ -7,7 +7,8 @@ export type Level = typeof levelValues[number]; // [1-90]
 export const weaponLevelValues = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90] as const;
 export type WeaponLevel = typeof weaponLevelValues[number]; // [1-90]
 
-export type ArtifactType = 'Flower' | 'Plume' | 'Sands' | 'Goblet' | 'Circlet';
+export const artifactTypeNames = ['Flower', 'Plume', 'Sands', 'Goblet', 'Circlet'] as const;
+export type ArtifactType = typeof artifactTypeNames[number];
 
 export const subStatNames = ['HP', 'HP%', 'DEF', 'DEF%', 'ATK', 'ATK%', 'EM', 'ER', 'CD', 'CR'];
 export type SubStatType = typeof subStatNames[number];
@@ -68,7 +69,7 @@ export interface CharacterBuild {
     elementalSkill: number, // [1-10]
     elementalBurst: number, // [1-10]
   },
-  constellation: number, // [1-6]
+  constellation: number, // [0-6]
   level: Level, // [1-90]
   exp?: number,
   ascension: number, // [0-6]

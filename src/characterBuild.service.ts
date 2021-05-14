@@ -5,6 +5,24 @@ import { ArtifactService } from './artifact.service';
 
 const getCharacter = (name: string): Character => CHARACTERS.find(c => c.name === name) as Character;
 
+const createDefault = (
+    character: Character,
+    playerId: string,
+): CharacterBuild => ({
+  characterName: character.name,
+  playerId,
+  talentLevels: {
+    normalAttack: 1,
+    elementalSkill: 1,
+    elementalBurst: 1
+  },
+  constellation: 0,
+  level: 1,
+  ascension: 0,
+  artifacts: new Array(5),
+  weapon: WeaponService.createDefault(character.weaponType)
+});
+
 const calculateStats = (build: CharacterBuild): BuildStats => {
   const character = getCharacter(build.characterName);
   const initial = { "ER": 100, "CR": 5, "CD": 50};
@@ -26,5 +44,6 @@ const calculateStats = (build: CharacterBuild): BuildStats => {
 
 export const CharacterBuildService = {
   getCharacter,
+  createDefault,
   calculateStats
 }

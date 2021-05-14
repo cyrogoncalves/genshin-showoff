@@ -1,4 +1,4 @@
-import { BuildStats, Weapon } from './model';
+import { BuildStats, Weapon, WeaponType } from './model';
 import * as WEAPONS from "../assets/weapons.json";
 import * as SCALING_STATS from "../assets/weaponScalingStats.json"
 import * as SCALING_SUBSTATS from "../assets/weaponScalingSubstats.json"
@@ -13,6 +13,11 @@ const ascensionLevelMap = [
   [80, 85, 90]
 ];
 
+const createDefault = (type: WeaponType): Weapon => ({
+  name: WEAPONS.find(w => w.type === type && w.rarity === 1).name,
+  level:1, ascension:0, refinement:1
+})
+
 const calculateStats = (weapon: Weapon): BuildStats => {
   const weaponModel = WEAPONS.find(w => w.name === weapon.name);
   const stats = {};
@@ -26,5 +31,6 @@ const calculateStats = (weapon: Weapon): BuildStats => {
 }
 
 export const WeaponService = {
-  calculateStats
+  calculateStats,
+  createDefault
 }

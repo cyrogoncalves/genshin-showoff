@@ -45,17 +45,17 @@ export const circlet: Artifact = {
   subStats: {'EM': 21, 'CR': 12.1, 'DEF': 37, 'ATK%': 4.1}
 }
 
-export const build: Partial<CharacterBuild> = {
-  // characterName: "Childe",
-  // playerId: "playerId",
+export const build: CharacterBuild = {
+  characterName: "Childe",
+  playerId: "playerId",
   talentLevels: {
     normalAttack: 5,
     elementalSkill: 10,
     elementalBurst: 9
   },
-  // constellation: 0,
-  // level: 90,
-  // ascension: 6,
+  constellation: 0,
+  level: 90,
+  ascension: 6,
   artifacts: [
     flower,
     plume,

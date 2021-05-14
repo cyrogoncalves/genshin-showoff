@@ -12,8 +12,9 @@ circlet depth cd em=21 cr=12.1 def=37 atk%=4.1`;
 
 describe('CharacterBuildCommand', () => {
   describe("parseBuild", () => {
-    const update = CharacterBuildCommand.parseBuild(input.split(/\s+|\n/))
-    expect(update).toStrictEqual(build2)
+    const { updates } = CharacterBuildCommand.parseBuild(input.split(/\s+|\n/), build2)
+    expect(updates).toStrictEqual(build2) // TODO não pega diferença de nível
+    // TODO HP e DEF totais estão vindo NaN
   })
 
   describe('createEmbed', () => {

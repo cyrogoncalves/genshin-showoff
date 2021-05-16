@@ -35,9 +35,9 @@ const calculateStats = (build: CharacterBuild): BuildStats => {
   [initial, baseStats, ...artStats, ...artBonusStats, weaponStats].forEach(s =>
     Object.keys(s).forEach(statName => stats[statName] = (stats[statName] || 0) + s[statName]));
 
-  stats["HP"] += baseStats["HP"] * (stats["HP%"] / 100);
-  stats["DEF"] += baseStats["DEF"] * (stats["DEF%"] / 100);
-  stats["ATK"] += (baseStats["ATK"] + weaponStats["ATK"]) * (stats["ATK%"] / 100);
+  if (stats["HP%"]) stats["HP"] += baseStats["HP"] * (stats["HP%"] / 100);
+  if (stats["DEF%"]) stats["DEF"] += baseStats["DEF"] * (stats["DEF%"] / 100);
+  if (stats["ATK%"]) stats["ATK"] += (baseStats["ATK"] + weaponStats["ATK"]) * (stats["ATK%"] / 100);
 
   return stats;
 }

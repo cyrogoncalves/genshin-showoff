@@ -1,7 +1,19 @@
 import * as CHARACTERS from "../assets/characters.json";
-import { BuildStats, Character, CharacterBuild } from './model';
-import { WeaponService } from './weapon.service';
+import * as WEAPONS from '../assets/weapons.json';
+import * as SCALING_STATS from '../assets/weaponScalingStats.json';
+import * as SCALING_SUBSTATS from '../assets/weaponScalingSubstats.json';
+import { BuildStats, Character, CharacterBuild, Weapon, WeaponLevel, WeaponType } from './model';
 import { ArtifactService } from './artifact.service';
+
+const ascensionLevelMap = [
+  [1, 5, 10, 15, 20],
+  [20, 25, 30, 35, 40],
+  [40, 45, 50],
+  [50, 55, 60],
+  [60, 65, 70],
+  [70, 75, 80],
+  [80, 85, 90]
+];
 
 const getCharacter = (name: string): Character => CHARACTERS.find(c => c.name === name) as Character;
 
@@ -20,7 +32,10 @@ const createDefault = (
   level: 1,
   ascension: 0,
   artifacts: new Array(5),
-  weapon: WeaponService.createDefault(character.weaponType)
+  weapon: {
+    name: WEAPONS.find(w => w.type === character.weaponType && w.rarity === 1).name,
+    level: 1, ascension: 0, refinement: 1
+  }
 });
 
 const calculateStats = (build: CharacterBuild): BuildStats => {
@@ -29,7 +44,7 @@ const calculateStats = (build: CharacterBuild): BuildStats => {
   const baseStats = character.stats[build.ascension][build.level];
   const artStats = build.artifacts.map(art => ArtifactService.getStats(art));
   const artBonusStats = ArtifactService.getBonusStats(build.artifacts);
-  const weaponStats = WeaponService.calculateStats(build.weapon);
+  const weaponStats = calculateWeaponStats(build.weapon);
 
   const stats = {};
   [initial, baseStats, ...artStats, ...artBonusStats, weaponStats].forEach(s =>
@@ -42,8 +57,32 @@ const calculateStats = (build: CharacterBuild): BuildStats => {
   return stats;
 }
 
-export const CharacterBuildService = {
+const validateLevelAscension = (o: CharacterBuild | Weapon) => {
+  if (o.level && !o.ascension) {
+    o.ascension = ascensionLevelMap.findIndex(a => a.includes(o.level));
+  } else if (!o.level && o.ascension) {
+    o.level = ascensionLevelMap[o.ascension][0] as WeaponLevel;
+  } else if (o.level && o.ascension && !ascensionLevelMap[o.ascension].includes(o.level)) {
+    throw new Error(`Invalid level-ascension (level=${o.level}, ascension=${o.ascension})`);
+  }
+};
+
+const calculateWeaponStats = (weapon: Weapon): BuildStats => {
+  const weaponModel = WEAPONS.find(w => w.name === weapon.name);
+  const stats = {};
+  stats["ATK"] = SCALING_STATS
+      [weaponModel.rarity-1]
+      .find(s => s[0][0] === weaponModel.baseAtk)
+      [weapon.ascension]
+      [ascensionLevelMap[weapon.ascension].findIndex(l => l === weapon.level)];
+  stats[weaponModel.substat.type] = SCALING_SUBSTATS[weaponModel.substat.base][Math.floor(weapon.level / 5)];
+  return stats;
+}
+
+export {
   getCharacter,
   createDefault,
-  calculateStats
+  calculateStats,
+  validateLevelAscension,
+  calculateWeaponStats
 }

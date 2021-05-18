@@ -1,5 +1,4 @@
 import * as Discord from 'discord.js';
-import { MessageEmbed } from 'discord.js';
 import * as ShowoffEmoji from "../assets/discordEmotes.json";
 import * as WEAPONS from '../assets/weapons.json';
 import * as ARTIFACTS from "../assets/artifacts.json";
@@ -18,8 +17,13 @@ import {
   weaponLevelValues,
   WeaponModel
 } from './model';
-import { CharacterBuildService } from './characterBuild.service';
-import { WeaponService } from './weapon.service';
+import {
+  calculateStats,
+  calculateWeaponStats,
+  createDefault,
+  getCharacter,
+  validateLevelAscension
+} from './characterBuild.service';
 import { ArtifactService } from './artifact.service';
 import { capitalize, guard, match } from './util';
 import { getUsername } from './discord-util';
@@ -68,8 +72,8 @@ const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
       case "Weapon":
         if (arg.startsWith("level=")) {
           const level = Number(arg.slice(6));
-          if (!guard<WeaponLevel>(weaponLevelValues, level))
-            throw Error("Invalid weapon level");
+          if (!guard<WeaponLevel>(weaponLevelValues, level, "number"))
+            throw Error(`Invalid weapon level '${level}'`);
           updates.weapon.level = level;
         } else if (arg.startsWith("ascension=")) {
           const ascension = Number(arg.slice(10));
@@ -130,37 +134,37 @@ const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
 
 const exe = async (message: Discord.Message, args: string[]) => {
   const characterName = match(args[0], CHARACTERS.map(c => c.name));
-  const character = CharacterBuildService.getCharacter(characterName);
+  const character = getCharacter(characterName);
   if (!character) return;
 
   const playerId = message.author.id;
   const collection = db.collection<CharacterBuild>("builds");
   const build = await collection.findOne({playerId, characterName});
 
-  const { mode, updates } = parseBuild(args, build || CharacterBuildService.createDefault(character, playerId));
+  const { mode, updates } = parseBuild(args, build || createDefault(character, playerId));
 
   if (updates) {
-    // TODO validations (level-ascension)
+    validateLevelAscension(updates);
+    validateLevelAscension(updates.weapon);
 
-    if (build) {
-      await collection.updateOne({playerId, characterName}, {$set: updates});
-    } else {
-      await collection.insertOne(updates);
-    }
+    await (!build ? collection.insertOne(updates) :
+        collection.updateOne({playerId, characterName}, {$set: updates}));
   } else if (!build) {
     return message.channel.send(`**:exclamation: | Build not found.**`);
   }
 
   const embed = createEmbed(build || updates)
       .setAuthor(getUsername(message), message.author.avatarURL())
-      .setThumbnail("attachment://char.png")
-  await message.channel.send({
+      .setColor(rarityColors[character.rarity])
+      .setThumbnail("attachment://char.png");
+  return message.channel.send({
     embed,
     files: [{
       attachment:'assets/noelle-avatar.png', // TODO
       name:'char.png'
     }]
-  }).then(() => message.channel.send(createArtifactsEmbed(build.artifacts)));
+  }).then(() => message.channel.send(createArtifactsEmbed(build.artifacts)
+      .setColor(rarityColors[character.rarity])));
 }
 
 const statLabelMap = {
@@ -168,6 +172,8 @@ const statLabelMap = {
   'Anemo DMG': "anemo", 'Geo DMG': "geo", 'Physical DMG': "ATK", 'Healing': "HP",
   "ATK%": "ATK", "HP%": "HP", "DEF%": "DEF"
 };
+
+const rarityColors = { 4: "#af00ce", 5: "#ffbf00" };
 
 const getAscensionEmotes = (ascension: number): string => {
   return [
@@ -185,13 +191,13 @@ const getStatDisplay = (statType: StatType, value: number): string => {
 }
 
 const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
-  const character = CharacterBuildService.getCharacter(build.characterName);
-  const buildStats = CharacterBuildService.calculateStats(build);
+  const character = getCharacter(build.characterName);
+  const buildStats = calculateStats(build);
   const extraStatKeys = Object.entries(buildStats).filter(([k]) => !subStatNames.includes(k));
   const weaponModel = WEAPONS.find(w => w.name === build.weapon.name) as WeaponModel;
-  const weaponStats = WeaponService.calculateStats(build.weapon);
+  const weaponStats = calculateWeaponStats(build.weapon);
 
-  return new Discord.MessageEmbed().setColor('#ffbf00')
+  return new Discord.MessageEmbed()
       .setTitle(`${ShowoffEmoji[character.element.toLowerCase()] || ""} ${character.name} C${build.constellation}`)
       .addField(`(level ${build.level} ${getAscensionEmotes(build.ascension)})`, [
         ...["HP", "ATK", "DEF", "EM"].map(s => getStatDisplay(s, buildStats[s])),
@@ -214,16 +220,17 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
 };
 
 const createArtifactsEmbed = (artifacts: Artifact[]): Discord.MessageEmbed => {
-  const embed = new MessageEmbed()
-      .setTitle("Artifacts")
-      .setColor('#ffbf00') // TODO by rarity
-  artifacts.forEach(art => {
-    embed.addField(`${ShowoffEmoji[art.type]} ${art.set} +${art.level}\n(${art.rarity} :star:) **${art.mainStat}: ${ArtifactService.getMainStatValue(art)}**`,
-          Object.entries(art.subStats).map(([statType, value]) => {
-    const rolls = ArtifactService.estimateSubstatRolls(statType, value, art.rarity);
-    const rollsStr = rolls.map(i => ShowoffEmoji[`roll${i+1}`]).reverse().join("");
-    return `${getStatDisplay(statType, value)} ${rollsStr}`;
-  }).join("\n"), true)});
+  const embed = new Discord.MessageEmbed();
+  artifacts.forEach(art => embed.addField(
+      `${ShowoffEmoji[art.type]} ${art.set} +${art.level}
+(${art.rarity} :star:) ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}`,
+      Object.entries(art.subStats).map(([statType, value]) => {
+        const rolls = ArtifactService.estimateSubstatRolls(statType, value, art.rarity);
+        const rollsStr = rolls.map(i => ShowoffEmoji[`roll${i + 1}`]).reverse().join("");
+        return `${getStatDisplay(statType, value)} ${rollsStr}`;
+      }).join("\n"),
+      true
+  ));
   embed.addField("\u200B", "\u200B", true) // hack!!
   return embed;
 }

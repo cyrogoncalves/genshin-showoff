@@ -150,20 +150,16 @@ const exe = async (message: Discord.Message, args: string[]) => {
     await (!build ? collection.insertOne(updates) :
         collection.updateOne({playerId, characterName}, {$set: updates}));
   } else if (!build) {
-    return message.channel.send(`**:exclamation: | Build not found.**`);
+    return message.channel.send(`**:exclamation: Build not found.**`);
   }
 
+  const name = character.name.replace(/\s/, "").toLowerCase(); // TODO traveler (Ex.: traveler_girl_geo)
   const embed = createEmbed(build || updates)
       .setAuthor(getUsername(message), message.author.avatarURL())
       .setColor(rarityColors[character.rarity])
-      .setThumbnail("attachment://char.png");
-  return message.channel.send({
-    embed,
-    files: [{
-      attachment:'assets/noelle-avatar.png', // TODO
-      name:'char.png'
-    }]
-  }).then(() => message.channel.send(createArtifactsEmbed(build.artifacts)
+      .setThumbnail(`https://genshin.honeyhunterworld.com/img/char/${name}_side_70.png`);
+  return message.channel.send(embed).then(() =>
+      message.channel.send(createArtifactsEmbed(build.artifacts)
       .setColor(rarityColors[character.rarity])));
 }
 
@@ -175,13 +171,11 @@ const statLabelMap = {
 
 const rarityColors = { 4: "#af00ce", 5: "#ffbf00" };
 
-const getAscensionEmotes = (ascension: number): string => {
-  return [
-    ascension === 0 ? ShowoffEmoji.ascension00 : ascension === 1 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-    ascension < 3 ? ShowoffEmoji.ascension00 : ascension < 4 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-    ascension < 5 ? ShowoffEmoji.ascension00 : ascension < 6 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-  ].join("");
-}
+const getAscensionEmotes = (ascension: number): string => [
+  ascension === 0 ? ShowoffEmoji.ascension00 : ascension === 1 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
+  ascension < 3 ? ShowoffEmoji.ascension00 : ascension < 4 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
+  ascension < 5 ? ShowoffEmoji.ascension00 : ascension < 6 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
+].join("");
 
 const getStatDisplay = (statType: StatType, value: number): string => {
   const displayValue = ['HP', 'DEF', 'ATK', 'EM'].includes(statType)

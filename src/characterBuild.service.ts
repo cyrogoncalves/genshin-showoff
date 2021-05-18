@@ -2,7 +2,7 @@ import * as CHARACTERS from "../assets/characters.json";
 import * as WEAPONS from '../assets/weapons.json';
 import * as SCALING_STATS from '../assets/weaponScalingStats.json';
 import * as SCALING_SUBSTATS from '../assets/weaponScalingSubstats.json';
-import { BuildStats, Character, CharacterBuild, Weapon, WeaponLevel, WeaponType } from './model';
+import { BuildStats, Character, CharacterBuild, Weapon, WeaponLevel } from './model';
 import { ArtifactService } from './artifact.service';
 
 const ascensionLevelMap = [

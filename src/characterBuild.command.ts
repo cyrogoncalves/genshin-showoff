@@ -25,27 +25,6 @@ import { capitalize, guard, match } from './util';
 import { getUsername } from './discord-util';
 import { db } from './mongodb';
 
-const statLabelMap = {
-  'Pyro DMG': "pyro", 'Hydro DMG': "hydro", 'Electro DMG': "electro", 'Cryo DMG': "cryo",
-  'Anemo DMG': "anemo", 'Geo DMG': "geo", 'Physical DMG': "ATK", 'Healing': "HP",
-  "ATK%": "ATK", "HP%": "HP", "DEF%": "DEF"
-};
-
-const getAscensionEmotes = (ascension: number): string => {
-  return [
-    ascension === 0 ? ShowoffEmoji.ascension00 : ascension === 1 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-    ascension < 3 ? ShowoffEmoji.ascension00 : ascension < 4 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-    ascension < 5 ? ShowoffEmoji.ascension00 : ascension < 6 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-  ].join("");
-}
-
-const getStatDisplay = (statType: StatType, value: number): string => {
-  const displayValue = ['HP', 'DEF', 'ATK', 'EM'].includes(statType)
-      ? Math.round(value) : `${Math.round(value * 10 || 0) / 10}%`;
-  const emote = ShowoffEmoji[statLabelMap[statType] || statType] || statType;
-  return `${emote} **${statType}:** ${displayValue}`;
-}
-
 const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
     { mode: string; updates: CharacterBuild } => {
   const modes = ["weapon", "flower", "plume", "sands", "goblet", "circlet"];
@@ -184,6 +163,27 @@ const exe = async (message: Discord.Message, args: string[]) => {
   }).then(() => message.channel.send(createArtifactsEmbed(build.artifacts)));
 }
 
+const statLabelMap = {
+  'Pyro DMG': "pyro", 'Hydro DMG': "hydro", 'Electro DMG': "electro", 'Cryo DMG': "cryo",
+  'Anemo DMG': "anemo", 'Geo DMG': "geo", 'Physical DMG': "ATK", 'Healing': "HP",
+  "ATK%": "ATK", "HP%": "HP", "DEF%": "DEF"
+};
+
+const getAscensionEmotes = (ascension: number): string => {
+  return [
+    ascension === 0 ? ShowoffEmoji.ascension00 : ascension === 1 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
+    ascension < 3 ? ShowoffEmoji.ascension00 : ascension < 4 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
+    ascension < 5 ? ShowoffEmoji.ascension00 : ascension < 6 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
+  ].join("");
+}
+
+const getStatDisplay = (statType: StatType, value: number): string => {
+  const displayValue = ['HP', 'DEF', 'ATK', 'EM'].includes(statType)
+      ? Math.round(value) : `${Math.round(value * 10 || 0) / 10}%`;
+  const emote = ShowoffEmoji[statLabelMap[statType] || statType] || statType;
+  return `${emote} **${statType}:** ${displayValue}`;
+}
+
 const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
   const character = CharacterBuildService.getCharacter(build.characterName);
   const buildStats = CharacterBuildService.calculateStats(build);
@@ -201,9 +201,9 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
         ...extraStatKeys.map(([k, v]) => getStatDisplay(k, v))
       ].join("\n"), true)
       .addField("Talents:", [
-        `Normal attack: ${build.talentLevels.normalAttack}`,
-        `Elemental skill: ${build.talentLevels.elementalSkill}`,
-        `Elemental burst: ${build.talentLevels.elementalBurst}`,  // TODO crowns
+        `Normal attack: ${build.talentLevels.normalAttack} ${build.talentLevels.normalAttack === 10 ? ":crown:" : ""}`,
+        `Elemental skill: ${build.talentLevels.elementalSkill} ${build.talentLevels.elementalSkill === 10 ? ":crown:" : ""}`,
+        `Elemental burst: ${build.talentLevels.elementalBurst} ${build.talentLevels.elementalBurst === 10 ? ":crown:" : ""}`,  // TODO constellation additions
         "",
         `**${ShowoffEmoji[weaponModel.type.toLowerCase()]} ${weaponModel.name} R${build.weapon.refinement}**`,
         `(level ${build.weapon.level} ${(getAscensionEmotes(build.weapon.ascension))})`,

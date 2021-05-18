@@ -67,7 +67,7 @@ const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
           updates.constellation = constellation;
         } else if (arg.startsWith("level=")) {
           const level = Number(arg.slice(6));
-          if (!guard<Level>(levelValues, level))
+          if (!guard<Level>(levelValues, level, "number"))
             throw Error("Invalid level");
           updates.level = level;
         } else if (arg.startsWith("ascension=")) {

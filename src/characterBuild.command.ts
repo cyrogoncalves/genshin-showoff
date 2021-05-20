@@ -204,11 +204,15 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
       ].join("\n"), true)
       .addField("Talents:", [
         `Normal attack: ${build.talentLevels.normalAttack} ${build.talentLevels.normalAttack === 10 ? ":crown:" : ""}`,
-        `Elemental skill: ${build.talentLevels.elementalSkill} ${build.talentLevels.elementalSkill === 10 ? ":crown:" : ""}`,
-        `Elemental burst: ${build.talentLevels.elementalBurst} ${build.talentLevels.elementalBurst === 10 ? ":crown:" : ""}`,  // TODO constellation additions
+        `Elemental skill: ${String(build.talentLevels.elementalSkill)
+            + (build.constellation >= character.skillTalentConstellation ? " (+3)" : "")
+            + (build.talentLevels.elementalSkill === 10 ? " :crown:" : "")}`,
+        `Elemental burst: ${String(build.talentLevels.elementalBurst)
+            + (build.constellation >= character.burstTalentConstellation ? " (+3)" : "")
+            + (build.talentLevels.elementalBurst === 10 ? " :crown:" : "")}`,
         "",
         `**${ShowoffEmoji[weaponModel.type.toLowerCase()]} ${weaponModel.name} R${build.weapon.refinement}**`,
-        `(level ${build.weapon.level} ${(getAscensionEmotes(build.weapon.ascension))})`,
+        `(level ${build.weapon.level} ${getAscensionEmotes(build.weapon.ascension)})`,
         `${ShowoffEmoji.ATK} **ATK:** ${weaponStats["ATK"]}`,
         ...Object.entries(weaponStats).filter(([k]) => k !== "ATK")
             .map(([k, v]) => getStatDisplay(k, v))

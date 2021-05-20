@@ -1,7 +1,5 @@
 import * as CHARACTERS from "../assets/characters.json";
 import * as WEAPONS from '../assets/weapons.json';
-import * as SCALING_STATS from '../assets/weaponScalingStats.json';
-import * as SCALING_SUBSTATS from '../assets/weaponScalingSubstats.json';
 import { BuildStats, Character, CharacterBuild, Weapon, WeaponLevel } from './model';
 import { ArtifactService } from './artifact.service';
 
@@ -17,10 +15,7 @@ const ascensionLevelMap = [
 
 const getCharacter = (name: string): Character => CHARACTERS.find(c => c.name === name) as Character;
 
-const createDefault = (
-    character: Character,
-    playerId: string,
-): CharacterBuild => ({
+const createDefault = (character: Character, playerId: string): CharacterBuild => ({
   characterName: character.name,
   playerId,
   talentLevels: {
@@ -33,7 +28,7 @@ const createDefault = (
   ascension: 0,
   artifacts: new Array(5),
   weapon: {
-    name: WEAPONS.find(w => w.type === character.weaponType && w.rarity === 1).name,
+    name: WEAPONS.models.find(w => w.type === character.weaponType && w.rarity === 1).name,
     level: 1, ascension: 0, refinement: 1
   }
 });
@@ -68,14 +63,14 @@ const validateLevelAscension = (o: CharacterBuild | Weapon) => {
 };
 
 const calculateWeaponStats = (weapon: Weapon): BuildStats => {
-  const weaponModel = WEAPONS.find(w => w.name === weapon.name);
+  const weaponModel = WEAPONS.models.find(w => w.name === weapon.name);
   const stats = {};
-  stats["ATK"] = SCALING_STATS
+  stats["ATK"] = WEAPONS.scalingStats
       [weaponModel.rarity-1]
       .find(s => s[0][0] === weaponModel.baseAtk)
       [weapon.ascension]
       [ascensionLevelMap[weapon.ascension].findIndex(l => l === weapon.level)];
-  stats[weaponModel.substat.type] = SCALING_SUBSTATS[weaponModel.substat.base][Math.floor(weapon.level / 5)];
+  stats[weaponModel.substat.type] = WEAPONS.scalingSubstats[weaponModel.substat.base][Math.floor(weapon.level / 5)];
   return stats;
 }
 

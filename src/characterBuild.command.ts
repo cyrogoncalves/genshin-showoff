@@ -86,7 +86,7 @@ const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
             throw Error("Invalid weapon refinement");
           updates.weapon.refinement = refinement;
         } else { // name
-          const modelName = match(arg, WEAPONS.map(w => w.name));
+          const modelName = match(arg, WEAPONS.models.map(w => w.name));
           if (!modelName)
             throw Error(`Invalid weapon name: ${arg}`);
           updates.weapon.name = modelName;
@@ -129,38 +129,40 @@ const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
         break;
     }
   }
+
+  if (updates) {
+    validateLevelAscension(updates);
+    validateLevelAscension(updates.weapon);
+  }
+
   return { updates, mode };
 }
 
 const exe = async (message: Discord.Message, args: string[]) => {
   const characterName = match(args[0], CHARACTERS.map(c => c.name));
   const character = getCharacter(characterName);
-  if (!character) return;
+  if (!character) return; // TODO usage
 
   const playerId = message.author.id;
   const collection = db.collection<CharacterBuild>("builds");
   const build = await collection.findOne({playerId, characterName});
 
-  const { mode, updates } = parseBuild(args, build || createDefault(character, playerId));
+  const { /*mode,*/ updates } = parseBuild(args, build || createDefault(character, playerId));
 
   if (updates) {
-    validateLevelAscension(updates);
-    validateLevelAscension(updates.weapon);
-
     await (!build ? collection.insertOne(updates) :
         collection.updateOne({playerId, characterName}, {$set: updates}));
   } else if (!build) {
-    return message.channel.send(`**:exclamation: Build not found.**`);
+    return message.channel.send(`:exclamation: **Build not found.**`);
   }
 
-  const name = character.name.replace(/\s/, "").toLowerCase(); // TODO traveler (Ex.: traveler_girl_geo)
-  const embed = createEmbed(build || updates)
+  const name = character.name.replace(/\s/, "").toLowerCase();
+  const color = rarityColors[character.rarity];
+  const embed = createEmbed(build || updates).setColor(color)
       .setAuthor(getUsername(message), message.author.avatarURL())
-      .setColor(rarityColors[character.rarity])
-      .setThumbnail(`https://genshin.honeyhunterworld.com/img/char/${name}_side_70.png`);
-  return message.channel.send(embed).then(() =>
-      message.channel.send(createArtifactsEmbed(build.artifacts)
-      .setColor(rarityColors[character.rarity])));
+      .setThumbnail(`https://genshin.honeyhunterworld.com/img/char/${name}_side_70.png`); // TODO traveler (Ex.: traveler_girl_geo)
+  return message.channel.send(embed).then(() => message.channel
+      .send(createArtifactsEmbed(build.artifacts).setColor(color)));
 }
 
 const statLabelMap = {
@@ -188,7 +190,7 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
   const character = getCharacter(build.characterName);
   const buildStats = calculateStats(build);
   const extraStatKeys = Object.entries(buildStats).filter(([k]) => !subStatNames.includes(k));
-  const weaponModel = WEAPONS.find(w => w.name === build.weapon.name) as WeaponModel;
+  const weaponModel = WEAPONS.models.find(w => w.name === build.weapon.name) as WeaponModel;
   const weaponStats = calculateWeaponStats(build.weapon);
 
   return new Discord.MessageEmbed()

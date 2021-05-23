@@ -147,13 +147,25 @@ const exe = async (message: Discord.Message, args: string[]) => {
   const collection = db.collection<CharacterBuild>("builds");
   const build = await collection.findOne({playerId, characterName});
 
-  const { /*mode,*/ updates } = parseBuild(args, build || createDefault(character, playerId));
+  const { mode, updates } = parseBuild(args, build || createDefault(character, playerId));
 
   if (updates) {
     await (!build ? collection.insertOne(updates) :
         collection.updateOne({playerId, characterName}, {$set: updates}));
   } else if (!build) {
     return message.channel.send(`:exclamation: **Build not found.**`);
+  }
+
+  const art = build.artifacts.find(a => a.type === mode);
+  if (!updates && art) {
+    const embed = new Discord.MessageEmbed()
+        .setAuthor(getUsername(message), message.author.avatarURL())
+        .setThumbnail("https://static.wikia.nocookie.net/gensin-impact/images/0/0f/Item_Witch%27s_Flower_of_Blaze.png/revision/latest/scale-to-width-down/60?cb=20201120065356") // TODO thumbnail
+        .setColor(rarityColors[art.rarity])
+        .setTitle(`${art.set} +${art.level}`)
+        .setDescription(`(${art.rarity} :star:) ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}`)
+        .addField("Substats:", getSubstatsDisplay(art), true)
+    return message.channel.send(embed)
   }
 
   const name = character.name.replace(/\s/, "").toLowerCase();
@@ -171,7 +183,13 @@ const statLabelMap = {
   "ATK%": "ATK", "HP%": "HP", "DEF%": "DEF"
 };
 
-const rarityColors = { 4: "#af00ce", 5: "#ffbf00" };
+const rarityColors = {
+  1: "#9c9c9c",
+  2: "#00993f",
+  3: "#006ece",
+  4: "#af00ce",
+  5: "#ffbf00"
+};
 
 const getAscensionEmotes = (ascension: number): string => [
   ascension === 0 ? ShowoffEmoji.ascension00 : ascension === 1 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
@@ -186,10 +204,17 @@ const getStatDisplay = (statType: StatType, value: number): string => {
   return `${emote} **${statType}:** ${displayValue}`;
 }
 
+const getSubstatsDisplay = (art: Artifact): string => {
+  return Object.entries(art.subStats).map(([statType, value]) => {
+    const rolls = ArtifactService.estimateSubstatRolls(statType, value, art.rarity);
+    const rollsStr = rolls.map(i => ShowoffEmoji[`roll${i + 1}`]).reverse().join("");
+    return `${getStatDisplay(statType, value)} ${rollsStr}`;
+  }).join("\n");
+}
+
 const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
   const character = getCharacter(build.characterName);
   const buildStats = calculateStats(build);
-  const extraStatKeys = Object.entries(buildStats).filter(([k]) => !subStatNames.includes(k));
   const weaponModel = WEAPONS.models.find(w => w.name === build.weapon.name) as WeaponModel;
   const weaponStats = calculateWeaponStats(build.weapon);
 
@@ -200,7 +225,8 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
         `${ShowoffEmoji.ER} **ER:** ${Math.round(buildStats["ER"] * 10 || 0) / 10}%`,
         `${ShowoffEmoji.CR} **Crit Rate:** ${Math.round(buildStats["CR"] * 10 || 0) / 10}%`,
         `${ShowoffEmoji.CD} **Crit DMG:** ${Math.round(buildStats["CD"] * 10 || 0) / 10}%`,
-        ...extraStatKeys.map(([k, v]) => getStatDisplay(k, v))
+        ...Object.entries(buildStats).filter(([k]) => !subStatNames.includes(k))
+            .map(([k, v]) => getStatDisplay(k, v))
       ].join("\n"), true)
       .addField("Talents:", [
         `Normal attack: ${build.talentLevels.normalAttack} ${build.talentLevels.normalAttack === 10 ? ":crown:" : ""}`,
@@ -221,16 +247,10 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
 
 const createArtifactsEmbed = (artifacts: Artifact[]): Discord.MessageEmbed => {
   const embed = new Discord.MessageEmbed();
-  artifacts.forEach(art => embed.addField(
-      `${ShowoffEmoji[art.type]} ${art.set} +${art.level}
-(${art.rarity} :star:) ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}`,
-      Object.entries(art.subStats).map(([statType, value]) => {
-        const rolls = ArtifactService.estimateSubstatRolls(statType, value, art.rarity);
-        const rollsStr = rolls.map(i => ShowoffEmoji[`roll${i + 1}`]).reverse().join("");
-        return `${getStatDisplay(statType, value)} ${rollsStr}`;
-      }).join("\n"),
-      true
-  ));
+  artifacts.forEach(art => embed.addField([
+      `${ShowoffEmoji[art.type]} ${art.set} +${art.level}`,
+      `(${art.rarity} :star:) ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}`
+  ].join("\n"), getSubstatsDisplay(art), true));
   embed.addField("\u200B", "\u200B", true) // hack!!
   return embed;
 }

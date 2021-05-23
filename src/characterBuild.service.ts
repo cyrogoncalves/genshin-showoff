@@ -52,15 +52,15 @@ const calculateStats = (build: CharacterBuild): BuildStats => {
   return stats;
 }
 
-const validateLevelAscension = (o: CharacterBuild | Weapon) => {
-  if (o.level && !o.ascension) {
+const normalizeAscension = (o: CharacterBuild | Weapon) => {
+  if (!ascensionLevelMap[o.ascension].includes(o.level))
     o.ascension = ascensionLevelMap.findIndex(a => a.includes(o.level));
-  } else if (!o.level && o.ascension) {
+}
+
+const normalizeLevel = (o: CharacterBuild | Weapon) => {
+  if (!ascensionLevelMap[o.ascension].includes(o.level))
     o.level = ascensionLevelMap[o.ascension][0] as WeaponLevel;
-  } else if (o.level && o.ascension && !ascensionLevelMap[o.ascension].includes(o.level)) {
-    throw new Error(`Invalid level-ascension (level=${o.level}, ascension=${o.ascension})`);
-  }
-};
+}
 
 const calculateWeaponStats = (weapon: Weapon): BuildStats => {
   const weaponModel = WEAPONS.models.find(w => w.name === weapon.name);
@@ -78,6 +78,7 @@ export {
   getCharacter,
   createDefault,
   calculateStats,
-  validateLevelAscension,
+  normalizeAscension,
+  normalizeLevel,
   calculateWeaponStats
 }

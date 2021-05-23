@@ -21,16 +21,16 @@ import {
   calculateStats,
   calculateWeaponStats,
   createDefault,
-  getCharacter,
-  validateLevelAscension
+  getCharacter, normalizeAscension, normalizeLevel,
 } from './characterBuild.service';
 import { ArtifactService } from './artifact.service';
 import { capitalize, guard, match } from './util';
 import { getUsername } from './discord-util';
 import { db } from './mongodb';
 
-const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
-    { mode: string; updates: CharacterBuild } => {
+const parseBuild = (
+    args: string[], build: CharacterBuild, mode = "Build"
+): { mode: string; updates: CharacterBuild } => {
   const modes = ["weapon", "flower", "plume", "sands", "goblet", "circlet"];
   let updates: CharacterBuild;
   for (let arg of args.slice(1)) {
@@ -39,7 +39,7 @@ const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
       continue;
     }
 
-    updates = updates || build;
+    updates = updates || {...build};
 
     switch (mode) {
       case "Build":
@@ -53,11 +53,13 @@ const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
           if (!guard<Level>(levelValues, level, "number"))
             throw Error("Invalid level");
           updates.level = level;
+          normalizeAscension(updates);
         } else if (arg.startsWith("ascension=")) {
           const ascension = Number(arg.slice(10));
           if (ascension < 0 || ascension > 6)
             throw Error("Invalid ascension");
           updates.weapon.ascension = ascension;
+          normalizeLevel(updates);
         } else if (arg.startsWith("talents=")) {
           if (!arg.match(/^talents=\d+,\d+,\d+$/))
             throw Error("Invalid talents (must be like 'talents=7,7,8')");
@@ -75,11 +77,13 @@ const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
           if (!guard<WeaponLevel>(weaponLevelValues, level, "number"))
             throw Error(`Invalid weapon level '${level}'`);
           updates.weapon.level = level;
+          normalizeAscension(updates.weapon);
         } else if (arg.startsWith("ascension=")) {
           const ascension = Number(arg.slice(10));
           if (ascension < 0 || ascension > 6)
             throw Error("Invalid weapon ascension");
           updates.weapon.ascension = ascension;
+          normalizeLevel(updates.weapon);
         } else if (arg.match(/R\d/)) {
           const refinement = Number(arg.slice(1));
           if (refinement < 1 || refinement > 5)
@@ -128,11 +132,6 @@ const parseBuild = (args: string[], build: CharacterBuild, mode = "Build"):
         }
         break;
     }
-  }
-
-  if (updates) {
-    validateLevelAscension(updates);
-    validateLevelAscension(updates.weapon);
   }
 
   return { updates, mode };
@@ -229,7 +228,7 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
             .map(([k, v]) => getStatDisplay(k, v))
       ].join("\n"), true)
       .addField("Talents:", [
-        `Normal attack: ${build.talentLevels.normalAttack} ${build.talentLevels.normalAttack === 10 ? ":crown:" : ""}`,
+        `Normal attack: ${build.talentLevels.normalAttack}${build.talentLevels.normalAttack === 10 ? " :crown:" : ""}`,
         `Elemental skill: ${String(build.talentLevels.elementalSkill)
             + (build.constellation >= character.skillTalentConstellation ? " (+3)" : "")
             + (build.talentLevels.elementalSkill === 10 ? " :crown:" : "")}`,

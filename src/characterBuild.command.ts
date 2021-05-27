@@ -58,7 +58,7 @@ const parseBuild = (
           const ascension = Number(arg.slice(10));
           if (ascension < 0 || ascension > 6)
             throw Error("Invalid ascension");
-          updates.weapon.ascension = ascension;
+          updates.ascension = ascension;
           normalizeLevel(updates);
         } else if (arg.startsWith("talents=")) {
           if (!arg.match(/^talents=\d+,\d+,\d+$/))
@@ -90,7 +90,9 @@ const parseBuild = (
             throw Error("Invalid weapon refinement");
           updates.weapon.refinement = refinement;
         } else { // name
-          const modelName = match(arg, WEAPONS.models.map(w => w.name));
+          const character = getCharacter(updates.characterName);
+          const weapons = WEAPONS.models.filter(w => w.type === character.weaponType);
+          const modelName = match(arg, weapons.map(w => w.name));
           if (!modelName)
             throw Error(`Invalid weapon name: ${arg}`);
           updates.weapon.name = modelName;
@@ -155,7 +157,7 @@ const exe = async (message: Discord.Message, args: string[]) => {
     return message.channel.send(`:exclamation: **Build not found.**`);
   }
 
-  const art = build.artifacts.find(a => a.type === mode);
+  const art = build?.artifacts.find(a => a.type === mode);
   if (!updates && art) {
     const embed = new Discord.MessageEmbed()
         .setAuthor(getUsername(message), message.author.avatarURL())

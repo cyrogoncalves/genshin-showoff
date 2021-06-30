@@ -10,7 +10,7 @@ export type WeaponLevel = typeof weaponLevelValues[number]; // [1-90]
 export const artifactTypeNames = ['Flower', 'Plume', 'Sands', 'Goblet', 'Circlet'] as const;
 export type ArtifactType = typeof artifactTypeNames[number];
 
-export const subStatNames = ['HP', 'HP%', 'DEF', 'DEF%', 'ATK', 'ATK%', 'EM', 'ER', 'CD', 'CR'];
+export const subStatNames = ['HP', 'HP%', 'ATK', 'ATK%', 'DEF', 'DEF%', 'EM', 'ER', 'CD', 'CR'];
 export type SubStatType = typeof subStatNames[number];
 
 export const mainStatNames = [...subStatNames, 'Healing', 'Pyro DMG', 'Hydro DMG', 'Electro DMG', 'Cryo DMG', 'Anemo DMG', 'Geo DMG', 'Physical DMG'];

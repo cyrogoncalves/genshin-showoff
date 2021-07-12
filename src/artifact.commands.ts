@@ -8,7 +8,7 @@ const createEmbed = () => {
       .setTitle("Witch's Flower of Blaze")
       .setColor('#ffd500')
       .setDescription("Flower of Life :star: :star: :star: :star: :star:")
-      .setThumbnail("https://static.wikia.nocookie.net/gensin-impact/images/0/0f/Item_Witch%27s_Flower_of_Blaze.png/revision/latest/scale-to-width-down/60?cb=20201120065356")
+      .setThumbnail("https://static.wikia.nocookie.net/gensin-impact/images/0/0c/Item_Gladiator%27s_Longing.png/revision/latest?cb=20201120063332")
       .addField("ATK", "**311**", true)
       .addField("Crit Rate", "+15.6%", true)
       .addField("Crit DMG", "+23.4%", true)

@@ -163,7 +163,7 @@ const exe = async (message: Discord.Message, args: string[]) => {
   if (!updates && art) {
     const embed = new Discord.MessageEmbed()
         .setAuthor(getUsername(message), message.author.avatarURL())
-        .setThumbnail("https://static.wikia.nocookie.net/gensin-impact/images/0/0f/Item_Witch%27s_Flower_of_Blaze.png/revision/latest/scale-to-width-down/60?cb=20201120065356") // TODO thumbnail
+        .setThumbnail("https://static.wikia.nocookie.net/gensin-impact/images/0/0c/Item_Gladiator%27s_Longing.png/revision/latest?cb=20201120063332") // TODO thumbnail
         .setColor(rarityColors[art.rarity])
         .setTitle(`${art.set} +${art.level}`)
         .setDescription(`(${art.rarity} :star:) ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}`)

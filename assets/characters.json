@@ -165,7 +165,7 @@
       {"80":{"HP":9108,"ATK":311,"DEF":586,"CD":38.4},"90":{"HP":9797,"ATK":335,"DEF":630,"CD":38.4}}]
   },
   {
-    "name": "Hu Tao",
+    "name": "Hutao",
     "rarity": 5,
     "element": "Pyro",
     "weaponType": "Polearm",

@@ -165,8 +165,8 @@ const exe = async (message: Discord.Message, args: string[]) => {
         .setAuthor(getUsername(message), message.author.avatarURL())
         .setThumbnail("https://static.wikia.nocookie.net/gensin-impact/images/0/0c/Item_Gladiator%27s_Longing.png/revision/latest?cb=20201120063332") // TODO thumbnail
         .setColor(rarityColors[art.rarity])
-        .setTitle(`${art.set} +${art.level}`)
-        .setDescription(`(${art.rarity} :star:) ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}`)
+        .setTitle(`${art.set}`)
+        .setDescription(`(${art.rarity}★) LV${art.level} ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}`)
         .addField("Substats:", getSubstatsDisplay(art), true)
     return message.channel.send(embed)
   }
@@ -194,11 +194,8 @@ const rarityColors = {
   5: "#ffbf00"
 };
 
-const getAscensionEmotes = (ascension: number): string => [
-  ascension === 0 ? ShowoffEmoji.ascension00 : ascension === 1 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-  ascension < 3 ? ShowoffEmoji.ascension00 : ascension < 4 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-  ascension < 5 ? ShowoffEmoji.ascension00 : ascension < 6 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-].join("");
+const getAscensionEmotes = (ascension: number): string =>
+  new Array(ascension).fill("✦").join("").padEnd(6, "✧");
 
 const getStatDisplayValue = (statType: StatType, value: number) =>
     ['HP', 'DEF', 'ATK', 'EM'].includes(statType) ? Math.round(value) : `${Math.round(value * 10 || 0) / 10}%`;
@@ -222,31 +219,32 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
   const weaponModel = WEAPONS.models.find(w => w.name === build.weapon.name) as WeaponModel;
   const weaponStats = calculateWeaponStats(build.weapon);
   const statNames = subStatNames.reverse();
+  const { normalAttack: n, elementalSkill: e, elementalBurst: q } = build.talentLevels;
 
   return new Discord.MessageEmbed()
       .setTitle(`${ShowoffEmoji[character.element.toLowerCase()] || ""} ${character.name} C${build.constellation}`)
-      .addField(`(level ${build.level} ${getAscensionEmotes(build.ascension)})`,
+      .addField(`(LV${build.level} ${getAscensionEmotes(build.ascension)})`,
           Object.entries(buildStats).filter(s => !s.includes("%")) // HP%, AKT%, DEF%
             .sort(([k1], [k2]) => statNames.indexOf(k2) - statNames.indexOf(k1))
             .map(([k, v]) => getStatDisplay(k, v))
       .join("\n"), true)
       .addField("Talents:", [
-        `Normal attack: ${build.talentLevels.normalAttack}${build.talentLevels.normalAttack === 10 ? " :crown:" : ""}`,
-        `Elemental skill: ${String(build.talentLevels.elementalSkill)
+        `Normal: ${n}${n === 10 ? " :crown:" : ""}`,
+        `Skill: ${String(e)
             + (build.constellation >= character.skillTalentConstellation ? " (+3)" : "")
-            + (build.talentLevels.elementalSkill === 10 ? " :crown:" : "")}`,
-        `Elemental burst: ${String(build.talentLevels.elementalBurst)
+            + (e === 10 ? " :crown:" : "")}`,
+        `Burst: ${String(q)
             + (build.constellation >= character.burstTalentConstellation ? " (+3)" : "")
-            + (build.talentLevels.elementalBurst === 10 ? " :crown:" : "")}`,
+            + (q === 10 ? " :crown:" : "")}`,
         "",
         `**${ShowoffEmoji[weaponModel.type.toLowerCase()]} ${weaponModel.name} R${build.weapon.refinement}**`,
-        `(level ${build.weapon.level} ${getAscensionEmotes(build.weapon.ascension)})`,
+        `(LV${build.weapon.level} ${getAscensionEmotes(build.weapon.ascension)})`,
         ...Object.entries(weaponStats).map(([k, v]) => getStatDisplay(k, v))
       ].join("\n"), true);
 };
 
-const getArtifactTitle = (art: Artifact): string => `**${ShowoffEmoji[art.type]} ${art.set} +${art.level}
-(${art.rarity} :star:) ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}**`;
+const getArtifactTitle = (art: Artifact): string => `**${ShowoffEmoji[art.type]} ${art.set}
+${art.rarity}★ LV${art.level} ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}**`;
 
 const createArtifactsEmbed = (artifacts: Artifact[]): Discord.MessageEmbed => {
   const embed = new Discord.MessageEmbed();

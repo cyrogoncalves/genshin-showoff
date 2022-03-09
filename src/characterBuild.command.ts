@@ -163,8 +163,8 @@ const exe = async (message: Discord.Message, args: string[]) => {
         .setAuthor(getUsername(message), message.author.avatarURL())
         .setThumbnail("https://static.wikia.nocookie.net/gensin-impact/images/0/0f/Item_Witch%27s_Flower_of_Blaze.png/revision/latest/scale-to-width-down/60?cb=20201120065356") // TODO thumbnail
         .setColor(rarityColors[art.rarity])
-        .setTitle(`${art.set} +${art.level}`)
-        .setDescription(`(${art.rarity} :star:) ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}`)
+        .setTitle(`${art.set}`)
+        .setDescription(`(${art.rarity}★) LV${art.level} ${art.mainStat}: ${ArtifactService.getMainStatValue(art)}`)
         .addField("Substats:", getSubstatsDisplay(art), true)
     return message.channel.send(embed)
   }
@@ -192,11 +192,8 @@ const rarityColors = {
   5: "#ffbf00"
 };
 
-const getAscensionEmotes = (ascension: number): string => [
-  ascension === 0 ? ShowoffEmoji.ascension00 : ascension === 1 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-  ascension < 3 ? ShowoffEmoji.ascension00 : ascension < 4 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-  ascension < 5 ? ShowoffEmoji.ascension00 : ascension < 6 ? ShowoffEmoji.ascension10 : ShowoffEmoji.ascension11,
-].join("");
+const getAscensionEmotes = (ascension: number): string =>
+  new Array(ascension).fill("✦").join("").padEnd(6, "✧");
 
 const getStatDisplay = (statType: StatType, value: number): string => {
   const displayValue = ['HP', 'DEF', 'ATK', 'EM'].includes(statType)
@@ -221,7 +218,7 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
 
   return new Discord.MessageEmbed()
       .setTitle(`${ShowoffEmoji[character.element.toLowerCase()] || ""} ${character.name} C${build.constellation}`)
-      .addField(`(level ${build.level} ${getAscensionEmotes(build.ascension)})`, [
+      .addField(`(LV${build.level} ${getAscensionEmotes(build.ascension)})`, [
         ...["HP", "ATK", "DEF", "EM"].map(s => getStatDisplay(s, buildStats[s])),
         `${ShowoffEmoji.ER} **ER:** ${Math.round(buildStats["ER"] * 10 || 0) / 10}%`,
         `${ShowoffEmoji.CR} **Crit Rate:** ${Math.round(buildStats["CR"] * 10 || 0) / 10}%`,
@@ -230,16 +227,16 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
             .map(([k, v]) => getStatDisplay(k, v))
       ].join("\n"), true)
       .addField("Talents:", [
-        `Normal attack: ${build.talentLevels.normalAttack}${build.talentLevels.normalAttack === 10 ? " :crown:" : ""}`,
-        `Elemental skill: ${String(build.talentLevels.elementalSkill)
+        `Normal: ${build.talentLevels.normalAttack}${build.talentLevels.normalAttack === 10 ? " :crown:" : ""}`,
+        `Skill: ${String(build.talentLevels.elementalSkill)
             + (build.constellation >= character.skillTalentConstellation ? " (+3)" : "")
             + (build.talentLevels.elementalSkill === 10 ? " :crown:" : "")}`,
-        `Elemental burst: ${String(build.talentLevels.elementalBurst)
+        `Burst: ${String(build.talentLevels.elementalBurst)
             + (build.constellation >= character.burstTalentConstellation ? " (+3)" : "")
             + (build.talentLevels.elementalBurst === 10 ? " :crown:" : "")}`,
         "",
         `**${ShowoffEmoji[weaponModel.type.toLowerCase()]} ${weaponModel.name} R${build.weapon.refinement}**`,
-        `(level ${build.weapon.level} ${getAscensionEmotes(build.weapon.ascension)})`,
+        `(LV${build.weapon.level} ${getAscensionEmotes(build.weapon.ascension)})`,
         `${ShowoffEmoji.ATK} **ATK:** ${weaponStats["ATK"]}`,
         ...Object.entries(weaponStats).filter(([k]) => k !== "ATK")
             .map(([k, v]) => getStatDisplay(k, v))

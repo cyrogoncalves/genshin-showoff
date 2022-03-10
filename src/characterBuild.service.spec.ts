@@ -21,8 +21,9 @@ describe('WeaponService', () => {
   describe('calculateStats', () => {
     it('works', () => {
       const stats = calculateWeaponStats(build.weapon);
-      expect(stats.ATK).toBe(674);
-      expect(stats.ER).toBe(36.8);
+      expect(stats.atk).toBe(674);
+      expect(stats.substat.type).toBe("ER");
+      expect(stats.substat.value).toBe(36.8);
     })
   });
 });

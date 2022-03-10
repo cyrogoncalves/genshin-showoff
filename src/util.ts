@@ -19,3 +19,12 @@ export const capitalize = (string: string): string =>
 
 export const match = (s: string, toMatch: string[]): string =>
     toMatch.find(m => m.toLowerCase().includes(s?.toLowerCase().replace("_", " ")));
+
+export const groupBy = <V>(
+    list: V[], keyGetter: (V) => string|number
+): { [d in string|number]?: V[] } => list.reduce((map, item) => {
+  const key = keyGetter(item);
+  if (!map[key]) map[key] = [];
+  map[key].push(item);
+  return map;
+}, {} as { [d in string|number]?: V[] });

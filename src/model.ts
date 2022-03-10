@@ -29,7 +29,8 @@ export interface Character {
   readonly burstTalentConstellation: 3 | 5,
   readonly stats: {
     readonly [level in Level]: BuildStats
-  }[]
+  }[],
+  readonly substat: { type: StatType, values: number[] }
 }
 
 export interface WeaponModel {

@@ -46,7 +46,7 @@ export const circlet: Artifact = {
 }
 
 export const build: CharacterBuild = {
-  characterName: "Childe",
+  characterName: "Tartaglia",
   playerId: "playerId",
   talentLevels: {
     normalAttack: 5,

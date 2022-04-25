@@ -5,6 +5,7 @@ import * as ARTIFACTS from "../assets/artifacts.json";
 import * as CHARACTERS from "../assets/characters.json";
 import {
   Artifact,
+  ArtifactType,
   artifactTypeNames,
   CharacterBuild,
   Level,
@@ -51,15 +52,18 @@ const normalizeLevel = (o: CharacterBuild | Weapon) => {
 const parseBuild = (
     args: string[], build: CharacterBuild, mode = "Build"
 ): { mode: string; updates: CharacterBuild } => {
-  const modes = ["weapon", "flower", "plume", "sands", "goblet", "circlet"];
-  let updates: CharacterBuild;
+  let updates: CharacterBuild = { ...build };
+  let art: Artifact;
   for (let arg of args.slice(1)) {
-    if (modes.includes(arg.toLowerCase())) {
+    if (arg.toLowerCase() === "weapon") { mode = "Weapon"; continue; }
+    if (guard<ArtifactType>(artifactTypeNames, capitalize(arg))) {
       mode = capitalize(arg);
+      const artIdx = artifactTypeNames.indexOf(mode as ArtifactType);
+      const mainStat = mode === 'Flower' ? "HP" : mode === "Plume" ? "ATK" : null;
+      updates.artifacts[artIdx] = { set: null, level: 20, rarity: 5, type: mode as ArtifactType, subStats: {}, mainStat };
+      art = updates.artifacts[artIdx];
       continue;
     }
-
-    updates = updates || {...build};
 
     switch (mode) {
       case "Build":
@@ -123,12 +127,6 @@ const parseBuild = (
       case "Sands":
       case "Goblet":
       case "Circlet":
-        const idx = artifactTypeNames.indexOf(mode);
-        if (!updates.artifacts[idx])
-          updates.artifacts[idx] = { set: null, level: 20, rarity: 5, type: mode, subStats: {},
-            mainStat: mode === 'Flower' ? "HP" : mode === "Plume" ? "ATK" : null };
-        const art = updates.artifacts[idx];
-
         const mainStat = match(arg, mainStatNames);
         const setName = match(arg, Object.keys(ARTIFACTS.sets));
         if (mainStat) {
@@ -193,7 +191,7 @@ const exe = async (message: Discord.Message, args: string[]) => {
   const color = rarityColors[character.rarity];
   const embed = createEmbed(build || updates).setColor(color)
       .setAuthor(getUsername(message), message.author.avatarURL())
-      .setThumbnail(`https://genshin.honeyhunterworld.com/img/char/${name}_side_70.png`); // TODO traveler (Ex.: traveler_girl_geo)
+      .setImage(`https://genshin.honeyhunterworld.com/img/char/${name}_side_70.png`); // TODO traveler (Ex.: traveler_girl_geo)
   return message.channel.send(embed)
       // .then(() => message.channel.send(createArtifactsEmbed(build.artifacts).setColor(color)));
 }
@@ -207,15 +205,15 @@ const statLabelMap = {
 const rarityColors = {
   1: "#9c9c9c",
   2: "#00993f",
-  3: "#006ece",
-  4: "#af00ce",
-  5: "#ffbf00"
+  3: "#1e6eb6",
+  4: "#7c1f89",
+  5: "#b68f1c"
 };
 
 const getStatDisplayValue = (statType: StatType, value: number) =>
     ['HP', 'DEF', 'ATK', 'EM'].includes(statType) ? Math.round(value) : `${Math.round(value * 10 || 0) / 10}%`;
 
-const getEmote = (type: StatType) => ShowoffEmoji[statLabelMap[type] || type] || "";
+const getEmote = (type: StatType): string => ShowoffEmoji[statLabelMap[type] || type] || "";
 
 const getStatDisplay = (type: StatType, value: number): string =>
   `${getEmote(type)} **${type}:** ${getStatDisplayValue(type, value)}`;
@@ -234,7 +232,7 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
   const stats = calculateStats(build);
   const buildStats = Object.entries(stats).map(([k, v]) => getStatDisplay(k, v));
   const { normalAttack: n, elementalSkill: e, elementalBurst: q } = build.talentLevels;
-  const artifacts = build.artifacts;
+  // const artifacts = build.artifacts;
 
   return new Discord.MessageEmbed()
       .setTitle(`${ShowoffEmoji[character.element.toLowerCase()] || ""} ${character.name} C${build.constellation} ${"★".repeat(character.rarity)}`)
@@ -251,23 +249,33 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
       ])
       .addField(`${ShowoffEmoji[character.weaponType.toLowerCase()]} ${build.weapon.name} R${build.weapon.refinement}`, [
         `LV${build.weapon.level} ${"✦".repeat(build.weapon.ascension).padEnd(6, "✧")}`,
-        `**:crossed_swords: ${weaponStats.atk}** ${getEmote(weaponStats.substat.type)} +${weaponStats.substat.value}`,
-        "",
-        getArtifactTitle(artifacts[0]),
-        getSubstatsDisplay(artifacts[0]),
-        "",
-        getArtifactTitle(artifacts[1]),
-        getSubstatsDisplay(artifacts[1]),
+        `**${ShowoffEmoji["ATK"]} ${weaponStats.atk}**`,
+        `${getEmote(weaponStats.substat.type)} +${weaponStats.substat.value}`
       ].join("\n"), true)
-    .addField(getArtifactTitle(artifacts[2]), [
-      getSubstatsDisplay(artifacts[2]),
-      "",
-      getArtifactTitle(artifacts[3]),
-      getSubstatsDisplay(artifacts[3]),
-      "",
-      getArtifactTitle(artifacts[4]),
-      getSubstatsDisplay(artifacts[4])
-    ].join("\n"), true);
+      .addFields(build.artifacts.map(art => ({
+        name: getArtifactTitle(art),
+        value: getSubstatsDisplay(art),
+        inline: true
+      })))
+    //   .addField(`${ShowoffEmoji[character.weaponType.toLowerCase()]} ${build.weapon.name} R${build.weapon.refinement}`, [
+    //     `LV${build.weapon.level} ${"✦".repeat(build.weapon.ascension).padEnd(6, "✧")}`,
+    //     `**:crossed_swords: ${weaponStats.atk}** ${getEmote(weaponStats.substat.type)} +${weaponStats.substat.value}`,
+    //     "",
+    //     getArtifactTitle(artifacts[0]),
+    //     getSubstatsDisplay(artifacts[0]),
+    //     "",
+    //     getArtifactTitle(artifacts[1]),
+    //     getSubstatsDisplay(artifacts[1]),
+    //   ].join("\n"), true)
+    // .addField(getArtifactTitle(artifacts[2]), [
+    //   getSubstatsDisplay(artifacts[2]),
+    //   "",
+    //   getArtifactTitle(artifacts[3]),
+    //   getSubstatsDisplay(artifacts[3]),
+    //   "",
+    //   getArtifactTitle(artifacts[4]),
+    //   getSubstatsDisplay(artifacts[4])
+    // ].join("\n"), true);
   // artifacts.forEach(art => embed.addField(getArtifactTitle(art), getSubstatsDisplay(art), true));
   // embed.addField("\u200B", "\u200B", true) // hack!!
 };

@@ -1,29 +1,15 @@
 import * as CHARACTERS from "../assets/characters.json";
 import * as WEAPONS from '../assets/weapons.json';
 import * as ARTIFACTS from "../assets/artifacts.json";
-import { Artifact, BuildStats, Character, CharacterBuild, StatType, Weapon, WeaponLevel } from './model';
+import { Artifact, BuildStats, Character, CharacterBuild, StatType, Weapon, WeaponModel } from './model';
 import { groupBy } from "./util";
 
-const ascensionLevelMap = [
-  [1, 5, 10, 15, 20],
-  [20, 25, 30, 35, 40],
-  [40, 45, 50],
-  [50, 55, 60],
-  [60, 65, 70],
-  [70, 75, 80],
-  [80, 85, 90]
-];
+export const getCharacter = (name: string): Character => CHARACTERS.find(c => c.name === name) as Character;
 
-const getCharacter = (name: string): Character => CHARACTERS.find(c => c.name === name) as Character;
-
-const createDefault = (character: Character, playerId: string): CharacterBuild => ({
+export const createDefault = (character: Character, playerId: string): CharacterBuild => ({
   characterName: character.name,
   playerId,
-  talentLevels: {
-    normalAttack: 1,
-    elementalSkill: 1,
-    elementalBurst: 1
-  },
+  talentLevels: { normalAttack: 1, elementalSkill: 1, elementalBurst: 1 },
   constellation: 0,
   level: 1,
   ascension: 0,
@@ -34,7 +20,7 @@ const createDefault = (character: Character, playerId: string): CharacterBuild =
   }
 });
 
-const calculateStats = (build: CharacterBuild): BuildStats => {
+export const calculateStats = (build: CharacterBuild): BuildStats => {
   const character = getCharacter(build.characterName);
   const weapon = calculateWeaponStats(build.weapon);
   const baseStats = { ...character.stats[build.ascension][build.level] }; // HP, ATK, DEF
@@ -51,21 +37,11 @@ const calculateStats = (build: CharacterBuild): BuildStats => {
         s100[statName] ? stats[s100[statName]] += value / 100 * baseStats[s100[statName]]
             : stats[statName] = (stats[statName] || 0) + value);
     return stats;
-  }, { ...baseStats, "CR": 5, "CD": 50, "ER": 100, "EM": 0 });
+  }, { ...baseStats, "EM": 0, "CR": 5, "CD": 50, "ER": 100 });
 }
 
-const normalizeAscension = (o: CharacterBuild | Weapon) => {
-  if (!ascensionLevelMap[o.ascension].includes(o.level))
-    o.ascension = ascensionLevelMap.findIndex(a => a.includes(o.level));
-}
-
-const normalizeLevel = (o: CharacterBuild | Weapon) => {
-  if (!ascensionLevelMap[o.ascension].includes(o.level))
-    o.level = ascensionLevelMap[o.ascension][0] as WeaponLevel;
-}
-
-const calculateWeaponStats = (weapon: Weapon): { atk:number, substat: { type:StatType, value:number } } => {
-  const weaponModel = WEAPONS.models.find(w => w.name === weapon.name);
+export const calculateWeaponStats = (weapon: Weapon): { atk:number, substat: { type:StatType, value:number } } => {
+  const weaponModel = WEAPONS.models.find(w => w.name === weapon.name) as WeaponModel;
   return {
     atk: WEAPONS.scalingStats[weaponModel.rarity - 1][weaponModel.baseAtk][weapon.ascension][weapon.level],
     substat: {
@@ -87,12 +63,3 @@ const getArtifactBonusStats = (artifacts: Artifact[]): BuildStats[] =>
     Object.entries(groupBy(artifacts, art => art.set))
         .filter(([_, arts]) => arts.length >= 2)
         .map(([setName]) => ARTIFACTS.sets[setName]?.twoPieceBonus ?? {});
-
-export {
-  getCharacter,
-  createDefault,
-  calculateStats,
-  normalizeAscension,
-  normalizeLevel,
-  calculateWeaponStats
-}

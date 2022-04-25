@@ -21,14 +21,32 @@ import {
   calculateWeaponStats,
   createDefault,
   getCharacter,
-  normalizeAscension,
-  normalizeLevel,
   getMainStatValue
 } from './characterBuild.service';
 import { ArtifactService } from './artifact.service';
 import { capitalize, guard, match } from './util';
 import { getUsername } from './discord-util';
 import { db } from './mongodb';
+
+const ascensionLevelMap = [
+  [1, 5, 10, 15, 20],
+  [20, 25, 30, 35, 40],
+  [40, 45, 50],
+  [50, 55, 60],
+  [60, 65, 70],
+  [70, 75, 80],
+  [80, 85, 90]
+];
+
+const normalizeAscension = (o: CharacterBuild | Weapon) => {
+  if (!ascensionLevelMap[o.ascension].includes(o.level))
+    o.ascension = ascensionLevelMap.findIndex(a => a.includes(o.level));
+}
+
+const normalizeLevel = (o: CharacterBuild | Weapon) => {
+  if (!ascensionLevelMap[o.ascension].includes(o.level))
+    o.level = ascensionLevelMap[o.ascension][0] as WeaponLevel;
+}
 
 const parseBuild = (
     args: string[], build: CharacterBuild, mode = "Build"
@@ -176,8 +194,8 @@ const exe = async (message: Discord.Message, args: string[]) => {
   const embed = createEmbed(build || updates).setColor(color)
       .setAuthor(getUsername(message), message.author.avatarURL())
       .setThumbnail(`https://genshin.honeyhunterworld.com/img/char/${name}_side_70.png`); // TODO traveler (Ex.: traveler_girl_geo)
-  return message.channel.send(embed).then(() => message.channel
-      .send(createArtifactsEmbed(build.artifacts).setColor(color)));
+  return message.channel.send(embed)
+      // .then(() => message.channel.send(createArtifactsEmbed(build.artifacts).setColor(color)));
 }
 
 const statLabelMap = {
@@ -197,65 +215,65 @@ const rarityColors = {
 const getStatDisplayValue = (statType: StatType, value: number) =>
     ['HP', 'DEF', 'ATK', 'EM'].includes(statType) ? Math.round(value) : `${Math.round(value * 10 || 0) / 10}%`;
 
-const getStatDisplay = (statType: StatType, value: number): string => {
-  const emote = ShowoffEmoji[statLabelMap[statType] || statType] || "";
-  return `**${statType}** ${getStatDisplayValue(statType, value)}`;
-}
+const getEmote = (type: StatType) => ShowoffEmoji[statLabelMap[type] || type] || "";
+
+const getStatDisplay = (type: StatType, value: number): string =>
+  `${getEmote(type)} **${type}:** ${getStatDisplayValue(type, value)}`;
 
 const getSubstatsDisplay = (art: Artifact): string => {
   return Object.entries(art.subStats).map(([statType, value]) => {
     const rolls = ArtifactService.estimateSubstatRolls(statType, value, art.rarity);
     const rollsStr = rolls.map(i => ShowoffEmoji[`roll${i + 1}`]).reverse().join("");
-    return `**${statType}** +${getStatDisplayValue(statType, value)} ${rollsStr}`;
+    return `${getEmote(statType)} +${getStatDisplayValue(statType, value)} ${rollsStr}`;
   }).join("\n");
 }
 
 const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
   const character = getCharacter(build.characterName);
   const weaponStats = calculateWeaponStats(build.weapon);
-  const buildStats = Object.entries(calculateStats(build));
+  const stats = calculateStats(build);
+  const buildStats = Object.entries(stats).map(([k, v]) => getStatDisplay(k, v));
   const { normalAttack: n, elementalSkill: e, elementalBurst: q } = build.talentLevels;
+  const artifacts = build.artifacts;
 
   return new Discord.MessageEmbed()
       .setTitle(`${ShowoffEmoji[character.element.toLowerCase()] || ""} ${character.name} C${build.constellation} ${"★".repeat(character.rarity)}`)
-      .setDescription(`LV${build.level} ${"✦".repeat(build.ascension).padEnd(6, "✧")}`)
-      .addFields(buildStats.map(([k, v]) =>
-          ({ name: `${k.replace("CD","Crit DMG").replace("CR", "Crit Rate")}:`, value: `${getStatDisplayValue(k, v)}`, inline: true })))
+      // .setDescription()
+      .addField(`LV${build.level} ${"✦".repeat(build.ascension).padEnd(6, "✧")}`,
+          `${buildStats.slice(0, 4).join("\n")}`, true)
+      .addField(`\u200B`, `${buildStats.slice(4).join("\n")}`, true)
+      // .addFields(buildStats.map(([k, v]) =>
+      //     ({ name: `${k.replace("CD","Crit DMG").replace("CR", "Crit Rate")}:`, value: `${getStatDisplayValue(k, v)}`, inline: true })))
       .addField("Talents", [
-        `\`Normal: ${n}\` ${"▰".repeat(n)}${n === 10 ? " :crown:" : ""}`,
-        `\`Skill:  ${e}\` ${"▰".repeat(e)}${build.constellation >= character.skillTalentConstellation ? "▱▱▱" : ""}${e === 10 ? " :crown:" : ""}`,
-        `\`Burst:  ${q}\` ${"▰".repeat(q)}${build.constellation >= character.burstTalentConstellation ? "▱▱▱" : ""}${q === 10 ? " :crown:" : ""}`
+        `\`Normal:\` ${"▰".repeat(n)} ${n}${n === 10 ? " :crown:" : ""}`,
+        `\`Skill: \` ${"▰".repeat(e)}${build.constellation >= character.skillTalentConstellation ? "▱▱▱" : ""} ${e}${e === 10 ? " :crown:" : ""}`,
+        `\`Burst: \` ${"▰".repeat(q)}${build.constellation >= character.burstTalentConstellation ? "▱▱▱" : ""} ${q}${q === 10 ? " :crown:" : ""}`,
       ])
       .addField(`${ShowoffEmoji[character.weaponType.toLowerCase()]} ${build.weapon.name} R${build.weapon.refinement}`, [
         `LV${build.weapon.level} ${"✦".repeat(build.weapon.ascension).padEnd(6, "✧")}`,
-        `**ATK ${weaponStats.atk}** ${weaponStats.substat.type}: +${weaponStats.substat.value}`
-      ].join("\n"), true);
+        `**:crossed_swords: ${weaponStats.atk}** ${getEmote(weaponStats.substat.type)} +${weaponStats.substat.value}`,
+        "",
+        getArtifactTitle(artifacts[0]),
+        getSubstatsDisplay(artifacts[0]),
+        "",
+        getArtifactTitle(artifacts[1]),
+        getSubstatsDisplay(artifacts[1]),
+      ].join("\n"), true)
+    .addField(getArtifactTitle(artifacts[2]), [
+      getSubstatsDisplay(artifacts[2]),
+      "",
+      getArtifactTitle(artifacts[3]),
+      getSubstatsDisplay(artifacts[3]),
+      "",
+      getArtifactTitle(artifacts[4]),
+      getSubstatsDisplay(artifacts[4])
+    ].join("\n"), true);
+  // artifacts.forEach(art => embed.addField(getArtifactTitle(art), getSubstatsDisplay(art), true));
+  // embed.addField("\u200B", "\u200B", true) // hack!!
 };
 
 const getArtifactTitle = (art: Artifact): string => `**${ShowoffEmoji[art.type]} ${art.set}
 ${art.rarity}★ LV${art.level} ${art.mainStat}: ${getMainStatValue(art)}**`;
-
-const createArtifactsEmbed = (artifacts: Artifact[]): Discord.MessageEmbed => {
-  const embed = new Discord.MessageEmbed();
-  embed.addField(getArtifactTitle(artifacts[0]), [
-    getSubstatsDisplay(artifacts[0]),
-    "",
-    getArtifactTitle(artifacts[1]),
-    getSubstatsDisplay(artifacts[1]),
-    "",
-    getArtifactTitle(artifacts[2]),
-    getSubstatsDisplay(artifacts[2])
-  ].join("\n"), true);
-  embed.addField(getArtifactTitle(artifacts[3]), [
-    getSubstatsDisplay(artifacts[3]),
-    "",
-    getArtifactTitle(artifacts[4]),
-    getSubstatsDisplay(artifacts[4])
-  ].join("\n"), true);
-  // artifacts.forEach(art => embed.addField(getArtifactTitle(art), getSubstatsDisplay(art), true));
-  // embed.addField("\u200B", "\u200B", true) // hack!!
-  return embed;
-}
 
 export const CharacterBuildCommand = {
   createEmbed,

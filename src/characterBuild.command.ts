@@ -226,26 +226,29 @@ const getSubstatsDisplay = (art: Artifact): string => {
   }).join("\n");
 }
 
+const getTalentDisplay = (value, boost = false) => [
+  `${"▰".repeat(value)}${boost ? "▱▱▱" : ""}`,
+  boost ? value + 3 : value,
+  value === 10 ? " :crown:" : ""
+].join(" ");
+
 const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
   const character = getCharacter(build.characterName);
   const weaponStats = calculateWeaponStats(build.weapon);
   const stats = calculateStats(build);
   const buildStats = Object.entries(stats).map(([k, v]) => getStatDisplay(k, v));
-  const { normalAttack: n, elementalSkill: e, elementalBurst: q } = build.talentLevels;
-  // const artifacts = build.artifacts;
 
   return new Discord.MessageEmbed()
       .setTitle(`${ShowoffEmoji[character.element.toLowerCase()] || ""} ${character.name} C${build.constellation} ${"★".repeat(character.rarity)}`)
-      // .setDescription()
       .addField(`LV${build.level} ${"✦".repeat(build.ascension).padEnd(6, "✧")}`,
           `${buildStats.slice(0, 4).join("\n")}`, true)
       .addField(`\u200B`, `${buildStats.slice(4).join("\n")}`, true)
-      // .addFields(buildStats.map(([k, v]) =>
-      //     ({ name: `${k.replace("CD","Crit DMG").replace("CR", "Crit Rate")}:`, value: `${getStatDisplayValue(k, v)}`, inline: true })))
       .addField("Talents", [
-        `\`Normal:\` ${"▰".repeat(n)} ${n}${n === 10 ? " :crown:" : ""}`,
-        `\`Skill: \` ${"▰".repeat(e)}${build.constellation >= character.skillTalentConstellation ? "▱▱▱" : ""} ${e}${e === 10 ? " :crown:" : ""}`,
-        `\`Burst: \` ${"▰".repeat(q)}${build.constellation >= character.burstTalentConstellation ? "▱▱▱" : ""} ${q}${q === 10 ? " :crown:" : ""}`,
+        `\`Normal:\` ${getTalentDisplay(build.talentLevels.normalAttack)}`,
+        `\`Skill: \` ${getTalentDisplay(build.talentLevels.elementalSkill,
+            build.constellation >= character.skillTalentConstellation)}`,
+        `\`Burst: \` ${getTalentDisplay(build.talentLevels.elementalBurst,
+            build.constellation >= character.burstTalentConstellation)}`,
       ])
       .addField(`${ShowoffEmoji[character.weaponType.toLowerCase()]} ${build.weapon.name} R${build.weapon.refinement}`, [
         `LV${build.weapon.level} ${"✦".repeat(build.weapon.ascension).padEnd(6, "✧")}`,
@@ -257,25 +260,6 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
         value: getSubstatsDisplay(art),
         inline: true
       })))
-    //   .addField(`${ShowoffEmoji[character.weaponType.toLowerCase()]} ${build.weapon.name} R${build.weapon.refinement}`, [
-    //     `LV${build.weapon.level} ${"✦".repeat(build.weapon.ascension).padEnd(6, "✧")}`,
-    //     `**:crossed_swords: ${weaponStats.atk}** ${getEmote(weaponStats.substat.type)} +${weaponStats.substat.value}`,
-    //     "",
-    //     getArtifactTitle(artifacts[0]),
-    //     getSubstatsDisplay(artifacts[0]),
-    //     "",
-    //     getArtifactTitle(artifacts[1]),
-    //     getSubstatsDisplay(artifacts[1]),
-    //   ].join("\n"), true)
-    // .addField(getArtifactTitle(artifacts[2]), [
-    //   getSubstatsDisplay(artifacts[2]),
-    //   "",
-    //   getArtifactTitle(artifacts[3]),
-    //   getSubstatsDisplay(artifacts[3]),
-    //   "",
-    //   getArtifactTitle(artifacts[4]),
-    //   getSubstatsDisplay(artifacts[4])
-    // ].join("\n"), true);
   // artifacts.forEach(art => embed.addField(getArtifactTitle(art), getSubstatsDisplay(art), true));
   // embed.addField("\u200B", "\u200B", true) // hack!!
 };

@@ -112,6 +112,12 @@
     "Heart of Depth": { "twoPieceBonus": { "Hydro DMG": 15 } },
     "Blizzard Strayer": { "twoPieceBonus": { "Cryo DMG": 15 } },
     "Tenacity of the Millelith": { "twoPieceBonus": { "HP%": 20 } },
-    "Pale Flame": { "twoPieceBonus": { "Physical DMG": 25 } }
+    "Pale Flame": { "twoPieceBonus": { "Physical DMG": 25 } },
+    "Emblem of Severed Fate": { "twoPieceBonus": { "ER": 20 } },
+    "Shimenawa's Reminiscence": { "twoPieceBonus": { "ATK%": 18 } },
+    "Husk of Opulent Dreams": { "twoPieceBonus": { "DEF%": 30 } },
+    "Ocean-Hued Clam": { "twoPieceBonus": { "Healing": 15 } },
+    "Vermillion Hereafter": { "twoPieceBonus": { "ATK%": 18 } },
+    "Echoes of an Offering": { "twoPieceBonus": { "ATK%": 18 } }
   }
 }

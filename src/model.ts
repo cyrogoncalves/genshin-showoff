@@ -25,8 +25,7 @@ export interface Character {
   readonly rarity: 4 | 5;
   readonly element?: 'Pyro' | 'Hydro' | 'Electro' | 'Cryo' | 'Anemo' | 'Geo' | 'Dendro'; // Element not specified for traveller
   readonly weaponType: WeaponType;
-  readonly skillTalentConstellation: 3 | 5,
-  readonly burstTalentConstellation: 3 | 5,
+  readonly talentConstellation: { elementalSkill: 3 | 5, elementalBurst: 3 | 5 },
   readonly stats: {
     readonly [level in Level]: BuildStats
   }[],

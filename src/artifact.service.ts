@@ -1,6 +1,6 @@
 import * as ARTIFACTS from "../assets/artifacts.json";
 
-const possibleCombinations = (possibleRollsCount: number, count: number, num: number = 0): number[][] => {
+export const possibleCombinations = (possibleRollsCount: number, count: number, num: number = 0): number[][] => {
   const array = [];
   for (let i = num; i < possibleRollsCount; i++) {
     if (count === 1)
@@ -13,7 +13,7 @@ const possibleCombinations = (possibleRollsCount: number, count: number, num: nu
   return array;
 };
 
-const estimateSubstatRolls = (type: string, value: number, rarity = 5) => {
+export const estimateSubstatRolls = (type: string, value: number, rarity = 5) => {
   const possibleRolls = ARTIFACTS.rolls[type][rarity - 1];
   let approx = null;
   for (let count = 1; count < 6; count++) {
@@ -26,8 +26,3 @@ const estimateSubstatRolls = (type: string, value: number, rarity = 5) => {
   }
   return approx.combination;
 };
-
-export const ArtifactService = {
-  possibleCombinations,
-  estimateSubstatRolls
-}

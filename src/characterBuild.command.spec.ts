@@ -20,9 +20,9 @@ describe('CharacterBuildCommand', () => {
     it('works', () => {
       const embed = CharacterBuildCommand.createEmbed(build);
       expect(embed).toBeTruthy();
-      expect(embed.title).toBe("<:geo:814601970617811015> Noelle C6");
+      expect(embed.title).toBe("<:geo:814601970617811015> Noelle C6 ★★★★");
 
-      expect(embed.fields[0].name).toBe("(level 80 <:ascension11:814957356881674250><:ascension11:814957356881674250><:ascension10:814957356886523975>)");
+      expect(embed.fields[0].name).toBe("LV80 ✦✦✦✦✦✧");
       expect(embed.fields[0].value).toMatch(/<:HP:\d+> \*\*HP:\*\* \d+\n<:ATK:\d+> \*\*ATK:\*\* \d+\n<:DEF:\d+> \*\*DEF:\*\* \d+\n<:EM:\d+> \*\*EM:\*\* \d+/);
       expect(embed.fields[1].name).toBe("Talents:");
       expect(embed.fields[1].value).toMatch(/^Normal attack: 1\nElemental skill: 1 \(\+3\)\nElemental burst: 9 \(\+3\)\n\n\*\*<:claymore:\d+> Skyward Pride R1\*\*\n\(level 90 <:ascension11:\d+><:ascension11:\d+><:ascension11:\d+>\)\n<:ATK:\d+> \*\*ATK:\*\* 674\n<:ER:\d+> \*\*ER:\*\* 36.8%/);

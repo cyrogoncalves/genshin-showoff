@@ -1,4 +1,4 @@
-const weaponTypeNames = ['Sword', 'Bow', 'Polearm', 'Catalyst', 'Claymore'] as const;
+const weaponTypeNames = ["Sword", "Bow", "Polearm", "Catalyst", "Claymore"] as const;
 export type WeaponType = typeof weaponTypeNames[number];
 
 export const levelValues = [1, 20, 40, 50, 60, 70, 80, 90] as const;
@@ -7,13 +7,13 @@ export type Level = typeof levelValues[number]; // [1-90]
 export const weaponLevelValues = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90] as const;
 export type WeaponLevel = typeof weaponLevelValues[number]; // [1-90]
 
-export const artifactTypeNames = ['Flower', 'Plume', 'Sands', 'Goblet', 'Circlet'] as const;
+export const artifactTypeNames = ["Flower", "Plume", "Sands", "Goblet", "Circlet"] as const;
 export type ArtifactType = typeof artifactTypeNames[number];
 
-export const subStatNames = ['HP', 'HP%', 'ATK', 'ATK%', 'DEF', 'DEF%', 'EM', 'ER', 'CD', 'CR'];
+export const subStatNames = ["HP", "HP%", "ATK", "ATK%", "DEF", "DEF%", "EM", "ER", "CD", "CR"];
 export type SubStatType = typeof subStatNames[number];
 
-export const mainStatNames = [...subStatNames, 'Healing', 'Pyro DMG', 'Hydro DMG', 'Electro DMG', 'Cryo DMG', 'Anemo DMG', 'Geo DMG', 'Physical DMG'];
+export const mainStatNames = [...subStatNames, "Healing", "Pyro DMG", "Hydro DMG", "Electro DMG", "Cryo DMG", "Anemo DMG", "Geo DMG", "Physical DMG"];
 export type StatType = typeof mainStatNames[number];
 
 export type BuildStats = {
@@ -23,7 +23,7 @@ export type BuildStats = {
 export interface Character {
   readonly name: string;
   readonly rarity: 4 | 5;
-  readonly element?: 'Pyro' | 'Hydro' | 'Electro' | 'Cryo' | 'Anemo' | 'Geo' | 'Dendro'; // Element not specified for traveller
+  readonly element?: "Pyro" | "Hydro" | "Electro" | "Cryo" | "Anemo" | "Geo" | "Dendro"; // Element not specified for traveller
   readonly weaponType: WeaponType;
   readonly talentConstellation: { elementalSkill: 3 | 5, elementalBurst: 3 | 5 },
   readonly stats: {

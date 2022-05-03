@@ -1,6 +1,6 @@
-import * as Discord from 'discord.js';
+import * as Discord from "discord.js";
 import * as ShowoffEmoji from "../assets/discordEmotes.json";
-import * as WEAPONS from '../assets/weapons.json';
+import * as WEAPONS from "../assets/weapons.json";
 import * as ARTIFACTS from "../assets/artifacts.json";
 import * as CHARACTERS from "../assets/characters.json";
 import {
@@ -16,38 +16,23 @@ import {
   Weapon,
   WeaponLevel,
   weaponLevelValues
-} from './model';
+} from "./model";
 import {
   calculateStats,
   calculateWeaponStats,
   createDefault,
+  createDefaultArtifact,
   getCharacter,
   getMainStatValue
-} from './characterBuild.service';
-import { estimateSubstatRolls } from './artifact.service';
-import { capitalize, guard, match } from './util';
-import { getUsername } from './discord-util';
-import { db } from './mongodb';
+} from "./characterBuild.service";
+import { estimateSubstatRolls } from "./artifact.service";
+import { capitalize, guard, match } from "./util";
+import { getUsername } from "./discord-util";
+import { db } from "./mongodb";
 
-const ascensionLevelMap = [
-  [1, 5, 10, 15, 20],
-  [20, 25, 30, 35, 40],
-  [40, 45, 50],
-  [50, 55, 60],
-  [60, 65, 70],
-  [70, 75, 80],
-  [80, 85, 90]
+const ascensionLevelMap: WeaponLevel[][] = [
+  [1, 5, 10, 15, 20], [20, 25, 30, 35, 40], [40, 45, 50], [50, 55, 60], [60, 65, 70], [70, 75, 80], [80, 85, 90]
 ];
-
-const normalizeAscension = (o: CharacterBuild | Weapon) => {
-  if (!ascensionLevelMap[o.ascension].includes(o.level))
-    o.ascension = ascensionLevelMap.findIndex(a => a.includes(o.level));
-}
-
-const normalizeLevel = (o: CharacterBuild | Weapon) => {
-  if (!ascensionLevelMap[o.ascension].includes(o.level))
-    o.level = ascensionLevelMap[o.ascension][0] as WeaponLevel;
-}
 
 const parseBuild = (
     args: string[], build: CharacterBuild, mode = "Build"
@@ -59,97 +44,88 @@ const parseBuild = (
     if (guard<ArtifactType>(artifactTypeNames, capitalize(arg))) {
       mode = capitalize(arg);
       artIdx = artifactTypeNames.indexOf(mode as ArtifactType);
-      updates.artifacts[artIdx] = { set: null, level: 20, rarity: 5, type: mode as ArtifactType, subStats: {},
-        mainStat: mode === 'Flower' ? "HP" : mode === "Plume" ? "ATK" : null };
+      updates.artifacts[artIdx] = createDefaultArtifact(mode as ArtifactType);
       continue;
     }
 
-    switch (mode) {
-      case "Build":
-        if (arg.match(/C\d/)) {
-          const constellation = Number(arg.slice(1));
-          if (constellation < 0 || constellation > 6)
-            throw Error("Invalid constellation");
-          updates.constellation = constellation;
-        } else if (arg.startsWith("level=")) {
-          const level = Number(arg.slice(6));
-          if (!guard<Level>(levelValues, level, "number"))
-            throw Error("Invalid level");
-          updates.level = level;
-          normalizeAscension(updates);
-        } else if (arg.startsWith("ascension=")) {
-          const ascension = Number(arg.slice(10));
-          if (ascension < 0 || ascension > 6)
-            throw Error("Invalid ascension");
-          updates.ascension = ascension;
-          normalizeLevel(updates);
-        } else if (arg.startsWith("talents=")) {
-          if (!arg.match(/^talents=\d+,\d+,\d+$/))
-            throw Error("Invalid talents (must be like 'talents=7,7,8')");
-          const talents = arg.slice(8).split(",").map(s => Number(s));
-          updates.talentLevels = {
-            normalAttack: talents[0],
-            elementalSkill: talents[1],
-            elementalBurst: talents[2]
-          };
-        }
-        break;
-      case "Weapon":
-        if (arg.startsWith("level=")) {
-          const level = Number(arg.slice(6));
-          if (!guard<WeaponLevel>(weaponLevelValues, level, "number"))
-            throw Error(`Invalid weapon level '${level}'`);
-          updates.weapon.level = level;
-          normalizeAscension(updates.weapon);
-        } else if (arg.startsWith("ascension=")) {
-          const ascension = Number(arg.slice(10));
-          if (ascension < 0 || ascension > 6)
-            throw Error("Invalid weapon ascension");
-          updates.weapon.ascension = ascension;
-          normalizeLevel(updates.weapon);
-        } else if (arg.match(/R\d/)) {
-          const refinement = Number(arg.slice(1));
-          if (refinement < 1 || refinement > 5)
-            throw Error("Invalid weapon refinement");
-          updates.weapon.refinement = refinement;
-        } else { // name
-          const character = getCharacter(updates.characterName);
-          const weapons = WEAPONS.models.filter(w => w.type === character.weaponType);
-          const modelName = match(arg, weapons.map(w => w.name));
-          if (!modelName)
-            throw Error(`Invalid weapon name: ${arg}`);
-          updates.weapon.name = modelName;
-        }
-        break;
-      case "Flower":
-      case "Plume":
-      case "Sands":
-      case "Goblet":
-      case "Circlet":
-        const mainStat = match(arg, mainStatNames);
-        const setName = match(arg, Object.keys(ARTIFACTS.sets));
-        if (mainStat) {
-          updates.artifacts[artIdx].mainStat = mainStat;
-        } else if (setName) {
-          updates.artifacts[artIdx].set = setName;
-        } else if (arg.startsWith("level=")) {
-          const level = Number(arg.slice(6));
-          if (level < 0 || level > 20)
-            throw Error(`Invalid ${mode} level`);
-          updates.artifacts[artIdx].level = level;
-        } else if (arg.startsWith("rarity=")) {
-          const rarity = Number(arg.slice(7));
-          if (rarity < 0 || rarity > 5)
-            throw Error(`Invalid ${mode} rarity`);
-          updates.artifacts[artIdx].rarity = rarity;
-        } else { // subStat
-          const [subStat, value] = arg.split("=");
-          const subStatName = match(subStat, subStatNames);
-          if (!subStatName || isNaN(value as any))
-            throw Error(`Invalid ${mode} subStat ${arg}`);
-          updates.artifacts[artIdx].subStats[subStatName] = Number(value);
-        }
-        break;
+    if (mode === "Build") {
+      if (arg.match(/C\d/)) {
+        const constellation = Number(arg.slice(1));
+        if (constellation < 0 || constellation > 6)
+          throw Error("Invalid constellation");
+        updates.constellation = constellation;
+      } else if (arg.startsWith("level=")) {
+        const level = Number(arg.slice(6));
+        if (!guard<Level>(levelValues, level, "number"))
+          throw Error("Invalid level");
+        updates.level = level;
+        if (!ascensionLevelMap[updates.ascension].includes(updates.level))
+          updates.ascension = ascensionLevelMap.findIndex(a => a.includes(updates.level));
+      } else if (arg.startsWith("ascension=")) {
+        const ascension = Number(arg.slice(10));
+        if (ascension < 0 || ascension > 6)
+          throw Error("Invalid ascension");
+        updates.ascension = ascension;
+        if (!ascensionLevelMap[updates.ascension].includes(updates.level))
+          updates.level = ascensionLevelMap[updates.ascension][0] as Level;
+      } else if (arg.startsWith("talents=")) {
+        const match = arg.match(/talents=(?<normalAttack>\d+),(?<elementalSkill>\d+),(?<elementalBurst>\d+)/);
+        if (!match)
+          throw Error("Invalid talents (must be like 'talents=7,7,8')");
+        updates.talentLevels = match.groups as any;
+      }
+    } else if (mode === "Weapon") {
+      if (arg.startsWith("level=")) {
+        const level = Number(arg.slice(6));
+        if (!guard<WeaponLevel>(weaponLevelValues, level, "number"))
+          throw Error(`Invalid weapon level '${level}'`);
+        updates.weapon.level = level;
+        if (!ascensionLevelMap[updates.weapon.ascension].includes(updates.weapon.level))
+          updates.weapon.ascension = ascensionLevelMap.findIndex(a => a.includes(updates.weapon.level));
+      } else if (arg.startsWith("ascension=")) {
+        const ascension = Number(arg.slice(10));
+        if (ascension < 0 || ascension > 6)
+          throw Error("Invalid weapon ascension");
+        updates.weapon.ascension = ascension;
+        if (!ascensionLevelMap[updates.weapon.ascension].includes(updates.weapon.level))
+          updates.weapon.level = ascensionLevelMap[updates.weapon.ascension][0] as WeaponLevel;
+      } else if (arg.match(/R\d/)) {
+        const refinement = Number(arg.slice(1));
+        if (refinement < 1 || refinement > 5)
+          throw Error("Invalid weapon refinement");
+        updates.weapon.refinement = refinement;
+      } else { // name
+        const character = getCharacter(updates.characterName);
+        const weapons = WEAPONS.models.filter(w => w.type === character.weaponType);
+        const modelName = match(arg, weapons.map(w => w.name));
+        if (!modelName)
+          throw Error(`Invalid weapon name: ${arg}`);
+        updates.weapon.name = modelName;
+      }
+    } else if (guard<ArtifactType>(artifactTypeNames, mode)) {
+      const mainStat = match(arg, mainStatNames);
+      const setName = match(arg, Object.keys(ARTIFACTS.sets));
+      if (mainStat) {
+        updates.artifacts[artIdx].mainStat = mainStat;
+      } else if (setName) {
+        updates.artifacts[artIdx].set = setName;
+      } else if (arg.startsWith("level=")) {
+        const level = Number(arg.slice(6));
+        if (level < 0 || level > 20)
+          throw Error(`Invalid ${mode} level`);
+        updates.artifacts[artIdx].level = level;
+      } else if (arg.startsWith("rarity=")) {
+        const rarity = Number(arg.slice(7));
+        if (rarity < 0 || rarity > 5)
+          throw Error(`Invalid ${mode} rarity`);
+        updates.artifacts[artIdx].rarity = rarity;
+      } else { // subStat
+        const [subStat, value] = arg.split("=");
+        const subStatName = match(subStat, subStatNames);
+        if (!subStatName || isNaN(value as any))
+          throw Error(`Invalid ${mode} subStat ${arg}`);
+        updates.artifacts[artIdx].subStats[subStatName] = Number(value);
+      }
     }
   }
 
@@ -200,8 +176,8 @@ const exe = async (message: Discord.Message, args: string[]) => {
 }
 
 const statLabelMap = {
-  'Pyro DMG': "pyro", 'Hydro DMG': "hydro", 'Electro DMG': "electro", 'Cryo DMG': "cryo",
-  'Anemo DMG': "anemo", 'Geo DMG': "geo", 'Physical DMG': "ATK", 'Healing': "HP",
+  "Pyro DMG": "pyro", "Hydro DMG": "hydro", "Electro DMG": "electro", "Cryo DMG": "cryo",
+  "Anemo DMG": "anemo", "Geo DMG": "geo", "Physical DMG": "ATK", "Healing": "HP",
   "ATK%": "ATK", "HP%": "HP", "DEF%": "DEF"
 };
 
@@ -214,7 +190,7 @@ const rarityColors = {
 };
 
 const getStatDisplayValue = (statType: StatType, value: number) =>
-    ['HP', 'DEF', 'ATK', 'EM'].includes(statType) ? Math.round(value) : `${Math.round(value * 10 || 0) / 10}%`;
+    ["HP", "DEF", "ATK", "EM"].includes(statType) ? Math.round(value) : `${Math.round(value * 10 || 0) / 10}%`;
 
 const getEmote = (type: StatType): string => ShowoffEmoji[statLabelMap[type] || type] || "";
 

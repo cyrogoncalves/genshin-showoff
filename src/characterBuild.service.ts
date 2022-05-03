@@ -1,7 +1,7 @@
 import * as CHARACTERS from "../assets/characters.json";
 import * as WEAPONS from '../assets/weapons.json';
 import * as ARTIFACTS from "../assets/artifacts.json";
-import { Artifact, BuildStats, Character, CharacterBuild, StatType, Weapon, WeaponModel } from './model';
+import { Artifact, ArtifactType, BuildStats, Character, CharacterBuild, StatType, Weapon, WeaponModel } from './model';
 import { groupBy } from "./util";
 
 export const getCharacter = (name: string): Character => CHARACTERS.find(c => c.name === name) as Character;
@@ -19,6 +19,10 @@ export const createDefault = (character: Character, playerId: string): Character
     level: 1, ascension: 0, refinement: 1
   }
 });
+
+export const createDefaultArtifact = (type: ArtifactType): Artifact => ({
+  set: "Adventurer", level: 20, rarity: 5, type, subStats: {},
+  mainStat: type === "Flower" ? "HP" : type === "Plume" ? "ATK" : "DEF%" });
 
 export const calculateStats = (build: CharacterBuild): BuildStats => {
   const character = getCharacter(build.characterName);

@@ -14,6 +14,8 @@ export const parseArgs = (args: string[], separator = "="): {[propName: string]:
 export const guard = <T>(possibleValues: readonly any[], value, type = "string"): value is T =>
     typeof value === type && possibleValues.includes(value);
 
+export const includes = <T extends U, U>(coll: ReadonlyArray<T>, el: U): el is T => coll.includes(el as T);
+
 export const capitalize = (string: string): string =>
     string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 

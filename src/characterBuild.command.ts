@@ -153,22 +153,22 @@ const exe = async (message: Discord.Message, args: string[]) => {
   const art = build?.artifacts.find(a => a.type === mode);
   if (!updates && art) {
     const embed = new Discord.MessageEmbed()
-        .setAuthor(getUsername(message), message.author.avatarURL())
+        .setAuthor({ name: getUsername(message), iconURL: message.author.avatarURL() })
         .setThumbnail("https://static.wikia.nocookie.net/gensin-impact/images/0/0c/Item_Gladiator%27s_Longing.png/revision/latest?cb=20201120063332") // TODO thumbnail
-        .setColor(rarityColors[art.rarity])
+        .setColor(rarityColors[art.rarity - 1])
         .setTitle(`${art.set}`)
         .setDescription(`${art.rarity}★ LV${art.level} ${art.mainStat}: ${getMainStatValue(art)}`)
         .addField("Substats:", getSubstatsDisplay(art), true)
-    return message.channel.send(embed)
+    return message.channel.send({ embeds: [embed] })
   }
 
   const name = character.name.replace(/\s/, "").toLowerCase();
   try {
     const embed = createEmbed(build || updates)
-        .setColor(rarityColors[character.rarity])
-        .setAuthor(getUsername(message), message.author.avatarURL())
+        .setColor(rarityColors[character.rarity - 1])
+        .setAuthor({ name: getUsername(message), iconURL: message.author.avatarURL() })
         .setImage(`https://genshin.honeyhunterworld.com/img/char/${name}_side_70.png`); // TODO traveler (Ex.: traveler_girl_geo)
-    return message.reply(embed)
+    return message.reply({ embeds: [embed] })
         // .then(() => message.channel.send(createArtifactsEmbed(build.artifacts).setColor(color)));
   } catch (err) {
     return message.reply(err.message);
@@ -181,13 +181,13 @@ const statLabelMap = {
   "ATK%": "ATK", "HP%": "HP", "DEF%": "DEF"
 };
 
-const rarityColors = {
-  1: "#9c9c9c",
-  2: "#00993f",
-  3: "#1e6eb6",
-  4: "#7c1f89",
-  5: "#b68f1c"
-};
+const rarityColors = [
+  "#9c9c9c",
+  "#00993f",
+  "#1e6eb6",
+  "#7c1f89",
+  "#b68f1c"
+] as const;
 
 const getStatDisplayValue = (statType: StatType, value: number) =>
     ["HP", "DEF", "ATK", "EM"].includes(statType) ? Math.round(value) : `${Math.round(value * 10 || 0) / 10}%`;
@@ -215,22 +215,22 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
 
   const buildStats = Object.entries(calculateStats(build))
       .map(([k, v]) => `${getEmote(k)} **${k}:** ${getStatDisplayValue(k, v)}`);
-  embed.addField(`LV${build.level} ${"✦".repeat(build.ascension).padEnd(6, "✧")}`, buildStats.slice(0, 4), true)
-      .addField(`\u200B`, buildStats.slice(4), true)
+  embed.addField(`LV${build.level} ${"✦".repeat(build.ascension).padEnd(6, "✧")}`, buildStats.slice(0, 4).join("\n"), true)
+      .addField(`\u200B`, buildStats.slice(4).join("\n"), true)
 
   embed.addField("Talents", Object.entries(build.talentLevels).map(([talent, value]) => [
     `\`${`${capitalize(talent.replace(/([A-Z])/g, " $1"))}:`.padEnd(16)}\``,
     `${"▰".repeat(value)}${build.constellation >= character.talentConstellation[talent] ? "▱▱▱" : ""}`,
     build.constellation >= character.talentConstellation[talent] ? value + 3 : value,
     value === 10 ? " :crown:" : ""
-  ].join(" ")))
+  ].join(" ")).join("\n"))
 
   const weaponStats = calculateWeaponStats(build.weapon);
   embed.addField(`${ShowoffEmoji[character.weaponType.toLowerCase()]} ${build.weapon.name} R${build.weapon.refinement}`, [
     `LV${build.weapon.level} ${"✦".repeat(build.weapon.ascension).padEnd(6, "✧")}`,
     `**${ShowoffEmoji["ATK"]} ${weaponStats.atk}**`,
     `${getEmote(weaponStats.substat.type)} +${getStatDisplayValue(weaponStats.substat.type, weaponStats.substat.value)}`
-  ], true)
+  ].join("\n"), true)
 
   // artifacts.forEach(art => embed.addField(getArtifactTitle(art), getSubstatsDisplay(art), true));
   // embed.addField("\u200B", "\u200B", true) // hack!!

@@ -15,7 +15,8 @@ import {
   subStatNames,
   Weapon,
   WeaponLevel,
-  weaponLevelValues
+  weaponLevelValues,
+  WeaponType
 } from "./model";
 import {
   calculateStats,
@@ -26,115 +27,122 @@ import {
   getMainStatValue
 } from "./characterBuild.service";
 import { estimateSubstatRolls } from "./artifact.service";
-import { capitalize, match, includes } from "./util";
+import { capitalize, includes, match } from "./util";
 import { getUsername } from "./discord-util";
 import { db } from "./mongodb";
 
-const ascensionLevelMap: WeaponLevel[][] = [
-  [1, 5, 10, 15, 20], [20, 25, 30, 35, 40], [40, 45, 50], [50, 55, 60], [60, 65, 70], [70, 75, 80], [80, 85, 90]
-];
+const ascensionLevelMap: WeaponLevel[][] =
+    [[1, 5, 10, 15, 20], [20, 25, 30, 35, 40], [40, 45, 50], [50, 55, 60], [60, 65, 70], [70, 75, 80], [80, 85, 90]];
 
-type Mode = "Build" | "Weapon" | ArtifactType;
+const parseBuildToken = (arg: string, updates: CharacterBuild) => {
+  if (arg.match(/C\d/)) {
+    const constellation = Number(arg.slice(1));
+    if (constellation < 0 || constellation > 6)
+      throw Error("Invalid constellation");
+    updates.constellation = constellation;
+  } else if (arg.startsWith("level=")) {
+    const level = Number(arg.slice(6));
+    if (!includes(levelValues, level))
+      throw Error("Invalid level");
+    updates.level = level;
+    if (!ascensionLevelMap[updates.ascension].includes(updates.level))
+      updates.ascension = ascensionLevelMap.findIndex(a => updates.level in a);
+  } else if (arg.startsWith("ascension=")) {
+    const ascension = Number(arg.slice(10));
+    if (ascension < 0 || ascension > 6)
+      throw Error("Invalid ascension");
+    updates.ascension = ascension;
+    if (!ascensionLevelMap[updates.ascension].includes(updates.level))
+      updates.level = ascensionLevelMap[updates.ascension][0] as Level;
+  } else if (arg.startsWith("talents=")) {
+    const match = arg.match(/talents=(?<normalAttack>\d+),(?<elementalSkill>\d+),(?<elementalBurst>\d+)/);
+    if (!match)
+      throw Error("Invalid talents (must be like 'talents=7,7,8')");
+    updates.talentLevels = match.groups as any;
+  }
+};
 
-const parseBuild = (args: string[], build: CharacterBuild): { mode: Mode; updates: CharacterBuild } => {
-  let mode: Mode = "Build";
+const parseWeaponToken = (arg: string, weapon: Weapon, weaponType: WeaponType) => {
+  if (arg.startsWith("level=")) {
+    const level = Number(arg.slice(6));
+    if (!includes(weaponLevelValues, level))
+      throw Error(`Invalid weapon level '${level}'`);
+    weapon.level = level;
+    if (!ascensionLevelMap[weapon.ascension].includes(weapon.level))
+      weapon.ascension = ascensionLevelMap.findIndex(a => weapon.level in a);
+  } else if (arg.startsWith("ascension=")) {
+    const ascension = Number(arg.slice(10));
+    if (ascension < 0 || ascension > 6)
+      throw Error("Invalid weapon ascension");
+    weapon.ascension = ascension;
+    if (!(weapon.level in ascensionLevelMap[weapon.ascension]))
+      weapon.level = ascensionLevelMap[weapon.ascension][0] as WeaponLevel;
+  } else if (arg.match(/R\d/)) {
+    const refinement = Number(arg.slice(1));
+    if (refinement < 1 || refinement > 5)
+      throw Error("Invalid weapon refinement");
+    weapon.refinement = refinement;
+  } else { // name
+    const weapons = WEAPONS.models.filter(w => w.type === weaponType);
+    const modelName = match(arg, weapons.map(w => w.name));
+    if (!modelName)
+      throw Error(`Invalid weapon name: ${arg}`);
+    weapon.name = modelName;
+  }
+};
+
+const parseArtifactToken = (arg: string, artifact: Artifact) => {
+  const mainStat = match(arg, mainStatNames);
+  const setName = match(arg, Object.keys(ARTIFACTS.sets));
+  if (mainStat) {
+    artifact.mainStat = mainStat;
+  } else if (setName) {
+    artifact.set = setName;
+  } else if (arg.startsWith("level=")) {
+    const level = Number(arg.slice(6));
+    if (level < 0 || level > 20)
+      throw Error(`Invalid ${artifact.type} level`);
+    artifact.level = level;
+  } else if (arg.startsWith("rarity=")) {
+    const rarity = Number(arg.slice(7));
+    if (rarity < 0 || rarity > 5)
+      throw Error(`Invalid ${artifact.type} rarity`);
+    artifact.rarity = rarity;
+  } else { // subStat
+    const [subStat, value] = arg.split("=");
+    const subStatName = match(subStat, subStatNames);
+    if (!subStatName || isNaN(value as any))
+      throw Error(`Invalid ${artifact.type} subStat ${arg}`);
+    artifact.subStats[subStatName] = Number(value);
+  }
+};
+
+export const parseBuild = (args: string[], build: CharacterBuild
+): { mode: "Build" | "Weapon" | ArtifactType, updates: CharacterBuild } => {
+  let mode: "Build" | "Weapon" | ArtifactType = "Build";
   let updates: CharacterBuild;
   let art: Artifact;
-  for (let arg of args.slice(1)) {
-    if (["Weapon", ...artifactTypeNames].includes(capitalize(arg))) {
-      mode = capitalize(arg) as Mode;
-      continue;
-    }
-    updates = updates || { ...build };
-
-    if (mode === "Build") {
-      if (arg.match(/C\d/)) {
-        const constellation = Number(arg.slice(1));
-        if (constellation < 0 || constellation > 6)
-          throw Error("Invalid constellation");
-        updates.constellation = constellation;
-      } else if (arg.startsWith("level=")) {
-        const level = Number(arg.slice(6));
-        if (!includes(levelValues, level))
-          throw Error("Invalid level");
-        updates.level = level;
-        if (!ascensionLevelMap[updates.ascension].includes(updates.level))
-          updates.ascension = ascensionLevelMap.findIndex(a => a.includes(updates.level));
-      } else if (arg.startsWith("ascension=")) {
-        const ascension = Number(arg.slice(10));
-        if (ascension < 0 || ascension > 6)
-          throw Error("Invalid ascension");
-        updates.ascension = ascension;
-        if (!ascensionLevelMap[updates.ascension].includes(updates.level))
-          updates.level = ascensionLevelMap[updates.ascension][0] as Level;
-      } else if (arg.startsWith("talents=")) {
-        const match = arg.match(/talents=(?<normalAttack>\d+),(?<elementalSkill>\d+),(?<elementalBurst>\d+)/);
-        if (!match)
-          throw Error("Invalid talents (must be like 'talents=7,7,8')");
-        updates.talentLevels = match.groups as any;
-      }
-    } else if (mode === "Weapon") {
-      if (arg.startsWith("level=")) {
-        const level = Number(arg.slice(6));
-        if (!includes(weaponLevelValues, level))
-          throw Error(`Invalid weapon level '${level}'`);
-        updates.weapon.level = level;
-        if (!ascensionLevelMap[updates.weapon.ascension].includes(updates.weapon.level))
-          updates.weapon.ascension = ascensionLevelMap.findIndex(a => a.includes(updates.weapon.level));
-      } else if (arg.startsWith("ascension=")) {
-        const ascension = Number(arg.slice(10));
-        if (ascension < 0 || ascension > 6)
-          throw Error("Invalid weapon ascension");
-        updates.weapon.ascension = ascension;
-        if (!ascensionLevelMap[updates.weapon.ascension].includes(updates.weapon.level))
-          updates.weapon.level = ascensionLevelMap[updates.weapon.ascension][0] as WeaponLevel;
-      } else if (arg.match(/R\d/)) {
-        const refinement = Number(arg.slice(1));
-        if (refinement < 1 || refinement > 5)
-          throw Error("Invalid weapon refinement");
-        updates.weapon.refinement = refinement;
-      } else { // name
+  args.slice(1).forEach(arg => {
+    if (["Weapon", ...artifactTypeNames].includes(capitalize(arg)))
+      mode = capitalize(arg) as "Weapon" | ArtifactType;
+    else {
+      updates = updates || { ...build };
+      if (mode === "Build") {
+        parseBuildToken(arg, updates);
+      } else if (mode === "Weapon") {
         const character = getCharacter(updates.characterName);
-        const weapons = WEAPONS.models.filter(w => w.type === character.weaponType);
-        const modelName = match(arg, weapons.map(w => w.name));
-        if (!modelName)
-          throw Error(`Invalid weapon name: ${arg}`);
-        updates.weapon.name = modelName;
-      }
-    } else if (mode in artifactTypeNames) {
-      if (art?.type !== mode)
-        art = updates.artifacts[artifactTypeNames.indexOf(mode)] = createDefaultArtifact(mode);
-
-      const mainStat = match(arg, mainStatNames);
-      const setName = match(arg, Object.keys(ARTIFACTS.sets));
-      if (mainStat) {
-        art.mainStat = mainStat;
-      } else if (setName) {
-        art.set = setName;
-      } else if (arg.startsWith("level=")) {
-        const level = Number(arg.slice(6));
-        if (level < 0 || level > 20)
-          throw Error(`Invalid ${mode} level`);
-        art.level = level;
-      } else if (arg.startsWith("rarity=")) {
-        const rarity = Number(arg.slice(7));
-        if (rarity < 0 || rarity > 5)
-          throw Error(`Invalid ${mode} rarity`);
-        art.rarity = rarity;
-      } else { // subStat
-        const [subStat, value] = arg.split("=");
-        const subStatName = match(subStat, subStatNames);
-        if (!subStatName || isNaN(value as any))
-          throw Error(`Invalid ${mode} subStat ${arg}`);
-        art.subStats[subStatName] = Number(value);
+        parseWeaponToken(arg, updates.weapon, character.weaponType);
+      } else {
+        if (art?.type !== mode)
+          art = updates.artifacts[artifactTypeNames.indexOf(mode)] = createDefaultArtifact(mode);
+        parseArtifactToken(arg, art);
       }
     }
-  }
-
+  })
   return { updates, mode };
-}
+};
 
-const exe = async (message: Discord.Message, args: string[]) => {
+export const exe = async (message: Discord.Message, args: string[]) => {
   const characterName = match(args[0], CHARACTERS.map(c => c.name));
   const character = getCharacter(characterName);
   if (!character) return message.channel.send("Command should start with caracter name.");
@@ -205,7 +213,7 @@ const getSubstatsDisplay = (art: Artifact): string =>
         `${getEmote(k)} +${getStatDisplayValue(k, v)} ${getRolls(art, k, v)}`
     ).join("\n");
 
-const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
+export const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
   const character = getCharacter(build.characterName);
 
   const embed = new Discord.MessageEmbed().setTitle([
@@ -244,9 +252,3 @@ const createEmbed = (build: CharacterBuild): Discord.MessageEmbed => {
 
   return embed;
 };
-
-export const CharacterBuildCommand = {
-  createEmbed,
-  parseBuild,
-  exe
-}

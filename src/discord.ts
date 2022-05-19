@@ -1,6 +1,6 @@
 require("dotenv").config();
 import * as Discord from 'discord.js';
-import { CharacterBuildCommand } from './characterBuild.command';
+import * as CharacterBuildCommand from './characterBuild.command';
 import './mongodb';
 
 const msg = require(`../assets/${process.env.LOCALE || 'en'}.messages.json`);

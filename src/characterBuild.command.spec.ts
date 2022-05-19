@@ -1,4 +1,4 @@
-import { CharacterBuildCommand } from "./characterBuild.command";
+import * as CharacterBuildCommand from "./characterBuild.command";
 import { build } from "./mock/mock";
 import { build as build2 } from "./mock/mock2";
 

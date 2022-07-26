@@ -1,0 +1,162 @@
+import {
+  Artifact, ArtifactType, CharacterBuild, Level, WeaponLevel,
+  weaponLevelValues, artifactTypeNames, levelValues, mainStatNames, subStatNames,
+} from "./model";
+import { capitalize, includes, match } from "./util";
+import { createDefaultArtifact, getCharacter } from "./characterBuild.service";
+import * as WEAPONS from "../assets/weapons.json";
+import * as ARTIFACTS from "../assets/artifacts.json";
+
+¢Fatura quer outras em aberto residencial sim:↓
+  ¢can handle: handler input→ handle states(handler input,"AMAZON.YesIntent","quer outra"),
+  ¢handle:handler input→ {
+    ¢ctx: handler input.attributesManager.getSessionAttributes();
+    ¢openInvoices: ctx.fatura.homeInvoices?.slice(1).filter(i→i.status="em aberto");
+    £dialog: "Você possui uma fatura no valor de R$ {openInvoices[0].amount}";
+    £display: "<b>Contrato:</b> ${openInvoices[0].homeContract}↩↩<b>Valor:</b> R${openInvoices[0].amount}"
+    openInvoices.length>1? {
+        dialog+: ", e outra, no valor de R$ {openInvoices[1].amount}, vencida em {openInvoices[1].dueDate}";
+        display+: "↩↩<b>Vencimento:</b> {openInvoices[1].dueDate}<br><b>Valor:</b> R${openInvoices[1].amount}";
+    }
+    dialog+: openInvoices>2? ". Identifiquei também outras faturas em aberto para este contrato. " # ". ";
+    ctx.fatura.status: "quer_email_outras_residencial";
+    dialog+: status[ctx.fatura.status];
+    sendEvent(handlerInput, "sucesso:quer_outras_em_aberto_residencial");
+
+    ¢↓say↑: concatDialog(dialogs.lembrete_sucesso, ↓end: status[ctx.fatura.status]↑);
+
+    ←getResponse(dialog, handlerInput, 0, display, "center");
+  }
+↑
+
+[[1,5,10,15,20], [20,25,30,35,40], [40,45,50], [50,55,60], [60,65,70], [70,75,80], [80,85,90]]
+  ↘ascensionLevelMap<WeaponLevel[][]>;
+
+((arg: string, updates: CharacterBuild) →
+arg .match(/C([0-6])/)? {
+  Number ↘updates.constellation
+} #.match(/level=(90|[0-8]?[0-9])$/)? {
+  Number ↘updates.level
+  in(updates.ascension↗ascensionLevelMap)
+    #ascensionLevelMap .findIndex(→ .includes(updates.level)) ↘updates.ascension;
+} #?.match(/ascension=([0-6])/) {
+  Number ↘updates.ascension;
+  ↗ascensionLevelMap .includes(updates.level)
+    #ascensionLevelMap↗updates.ascension↗0 ↘updates.level;
+} #.match(/talents=(?<normalAttack>10|\d),(?<elementalSkill>10|\d),(?<elementalBurst>10|\d)$/)? {
+  .groups ↘updates.talentLevels
+} #"Invalid token $" Error←)
+↘parseBuildToken
+
+((arg:string, weapon:Weapon, character:Character) →
+arg .match(/level=(90|[0-8]?[0-9])$/)? {
+  Number ↘weapon.level
+  in(weapon.ascension↗ascensionLevelMap)
+    #ascensionLevelMap .findIndex(→ .includes(weapon.level)) ↘weapon.ascension;
+} #.match(/ascension=([0-6])/)? {
+  Number ↘weapon.ascension
+  ↗ascensionLevelMap .includes(weapon.level)
+    #ascensionLevelMap↗weapon.ascension↗0 ↘weapon.level;
+} #.match(/R([1-5])/)? {
+  Number ↘weapon.refinement
+} #WEAPONS.models .filter(→.type =character.weaponType) .map(→.name) match(arg)? {
+   ↘weapon.name
+} #"Invalid weapon token $" Error←)
+↘parseWeaponToken
+
+((arg:string, artifact:Artifact) → {
+  arg match(mainStatNames)? ↘artifact.mainStat
+  # match(Object.keys(ARTIFACTS.sets))? ↘artifact.set
+  #.match(/level=([1-2]?[0-9])$/)? Number ↘artifact.level
+  #.match(/rarity=([1-5])$/)? Number ↘artifact.rarity
+  #.match(/(?<stat>ATK%?|DEF%?|HP%?|EM|ER|CD|CR)=(?<value>\d+(\.\d)?)$/)?
+    .groups ↘[subStatName, value] value ↘(art.artifact↗subStatName)
+  #"Invalid artifact token $" Error←;
+}) ↘parseArtifactToken;
+
+type Mode: "build" | "weapon" | ArtifactType;
+((args:string[], build:CharacterBuild): {mode:Mode, updates:CharacterBuild} → {
+  "build" ↘£mode:Mode;
+  ↘£updates:CharacterBuild;
+  ↘£art:Artifact;
+  args.slice(1).forEach(arg → {
+    .match(/^weapon|{...ArtifactType}$/)? .toLowerCase ↘mode
+    # {
+      updates #{...build} ↘updates;
+      mode ="build"? parseBuildToken(arg, updates)
+      #="weapon"? updates.characterName getCharacter()
+        parseWeaponToken(arg, updates.weapon, $.weaponType)
+      # {
+        =art?.type# createDefaultArtifact() ↘art
+          ↘(updates.artifacts↗(artifactTypeNames.indexOf(mode)));
+        parseArtifactToken(art);
+      }
+    }
+  })
+  (updates, mode)←;
+}) ↘parseBuild;
+
+parseBuild: (args<string[]>, build<CharacterBuild>)<{ mode: Mode; updates: CharacterBuild }> → {
+  "Build" ↘£mode;
+  ↘£updates<CharacterBuild>;
+  ↘£art<Artifact>;
+  args.slice(1).forEach(arg → {
+    ↝capitalize ↝in(["Weapon", ...artifactTypeNames])? ↘mode ↩
+    #updates #{ ...build } ↘updates;
+
+    mode ?="Build" {
+      arg ?.match(/C\d/)
+        .slice(1) ↝Number ?($>-1 | $<7) ↘updates.constellation
+          #"Invalid constellation" ↝Error←;
+      #?.startsWith("level=") {
+        .slice(6) ↝Number ?↝includes(levelValues) ↘updates.level #"Invalid level" ↝Error←;
+        updates.ascension ↗ascensionLevelMap ?.includes(updates.level)
+          #ascensionLevelMap .findIndex(→it .includes(updates.level)) ↘updates.ascension;
+      } #?.startsWith("ascension=") {
+        .slice(10) ↝Number ?($>=0 | $<7) ↘updates.ascension #"Invalid ascension" ↝Error←;
+        updates.ascension ↗ascensionLevelMap ?.includes(updates.level)
+          #ascensionLevelMap↗updates.ascension↗0 ↘updates.level;
+      } #?.startsWith("talents=") {
+        ?.match(/talents=(?<normalAttack>\d+),(?<elementalSkill>\d+),(?<elementalBurst>\d+)/)
+          .groups ↘updates.talentLevels
+          #"Invalid talents (must be like 'talents=7,7,8')" ↝Error←
+      }
+    } #?="Weapon" {
+      arg ?.startsWith("level=") {
+        .slice(6) ↝Number ↘level ?.in(weaponLevelValues) ↘updates.weapon.level
+          #level "Invalid weapon level '$'" ↝Error←;
+        ascensionLevelMap ↗updates.weapon.ascension ?.includes(updates.weapon.level)
+          #ascensionLevelMap .findIndex(→it .includes(updates.weapon.level)) ↘updates.weapon.ascension;
+      } #?.startsWith("ascension=") {
+        .slice(10) ↝Number ?($>=0 | $<7) ↘updates.weapon.ascension
+          #"Invalid ascension" ↝Error←;
+        updates.weapon.ascension↗ascensionLevelMap ?.includes(updates.weapon.level)
+          #ascensionLevelMap↗updates.weapon.ascension↗0 ↘updates.weapon.level;
+      } #?.match(/R\d/) {
+        .slice(1) ↝Number >0? <6? ↘updates.weapon.refinement
+          #"Invalid weapon refinement" ↝Error←;
+      } # { // name
+        updates.characterName ↝getCharacter() ↘character;
+        WEAPONS.models .filter(→it.type=character.weaponType)
+          .map(→it.name) ?↝match(arg) ↘updates.weapon.name
+            #arg "Invalid weapon name: $" ↝Error←;
+      }
+    } #? in(artifactTypeNames) {
+      !?=art?.type ↝createDefaultArtifact ↘art ↘(updates.artifacts↗(artifactTypeNames.indexOf(mode)));
+
+      arg ↝match(mainStatNames) ? ↘art.mainStat
+      #arg ↝match(Object.keys(ARTIFACTS.sets)) ? ↘art.set;
+      #arg .startsWith("level=")? .slice(6) ↝Number >=0? <21? ↘art.level
+         #artifact.type "Invalid $ level" ↝Error←;
+      #arg .startsWith("rarity=") .slice(7) ↝Number >=0? <6? ↘art.rarity
+         #artifact.type "Invalid $ rarity" ↝Error←;
+      # { // subStat
+        arg .split("=") ↘[subStat, value];
+        subStat ↝match(subStatNames) ↘subStatName ? value→↝Number? ↘(art.subStats↗subStatName)
+          #"Invalid $artifact.type substat $arg" ↝Error←;
+      };
+    }
+  }
+
+  (updates, mode)←;
+}
